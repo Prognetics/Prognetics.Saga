@@ -29,5 +29,5 @@ jobs:
       with:       
           name: Orchestrator.Package
           path: |
-            *.nupkg
+            **/*.nupkg
           retention-days: 3
