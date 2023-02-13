@@ -23,4 +23,4 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal    
     - name: Pack Orchestrator
-      run: dotnet pack ~/Orchestrator/Prognetics.Saga.Orchestrator/Prognetics.Saga.Orchestrator.csproj /p:PackageVersion=1.0.${{github.run_number}}
+      run: dotnet pack ~/Prognetics.Saga/Prognetics.Saga/Orchestrator/Prognetics.Saga.Orchestrator/Prognetics.Saga.Orchestrator.csproj /p:PackageVersion=1.0.${{github.run_number}}
