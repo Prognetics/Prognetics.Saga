@@ -1,3 +1,5 @@
+name: Orchestrator CD Build
+
 on:
   workflow_run:
     workflows: ["Orchestrator CI Build"]
@@ -23,5 +25,5 @@ jobs:
     # Source to scope the NuGet API Key to.
     #      nuget-api-key-source: # optional
       - name: Publish package
-      - run: echo 'hello world!'
+        run: echo 'hello world!'
         
