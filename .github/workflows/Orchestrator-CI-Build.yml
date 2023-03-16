@@ -23,7 +23,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal    
     - name: Pack Orchestrator
-      run: dotnet pack ${GITHUB_WORKSPACE}/Orchestrator/Prognetics.Saga.Orchestrator/Prognetics.Saga.Orchestrator.csproj /p:PackageVersion=1.0.${{github.run_number}}
+      run: dotnet pack ${GITHUB_WORKSPACE}/Orchestrator/Prognetics.Saga.Orchestrator/Prognetics.Saga.Orchestrator.csproj
     - name: Upload a Orchestrator.Package Artifact
       uses: actions/upload-artifact@v3.1.2
       with:       
