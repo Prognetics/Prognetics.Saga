@@ -1,4 +1,4 @@
-﻿namespace Prognetics.Saga.Queue.RabbitMQ;
+﻿namespace Prognetics.Saga.Queue.RabbitMQ.Configuration;
 
 public class RabbitMqSagaOptions
 {

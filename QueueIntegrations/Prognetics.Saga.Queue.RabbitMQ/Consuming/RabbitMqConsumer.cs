@@ -1,6 +1,6 @@
 ﻿using RabbitMQ.Client;
 
-namespace Prognetics.Saga.Queue.RabbitMQ;
+namespace Prognetics.Saga.Queue.RabbitMQ.Consuming;
 
 public class RabbitMqConsumer
 {

@@ -1,16 +1,11 @@
-﻿using Microsoft.Extensions.Options;
-using Prognetics.Saga.Orchestrator;
+﻿using Prognetics.Saga.Orchestrator;
+using Prognetics.Saga.Queue.RabbitMQ.Configuration;
+using Prognetics.Saga.Queue.RabbitMQ.Serialization;
 using RabbitMQ.Client;
-using System.Threading.Channels;
 
-namespace Prognetics.Saga.Queue.RabbitMQ;
+namespace Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 
-public interface IRabbitMqSagaSubscriberFactory
-{
-    ISagaSubscriber Create(IModel model);
-}
-
-public class RabbitMqSagaSubscriberFactory : IRabbitMqSagaSubscriberFactory
+class RabbitMqSagaSubscriberFactory : IRabbitMqSagaSubscriberFactory
 {
     private readonly IRabbitMqSagaSerializer _serializer;
     private readonly RabbitMqSagaOptions _options;

@@ -1,15 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text;
 using Prognetics.Saga.Orchestrator;
-using System;
 
-namespace Prognetics.Saga.Queue.RabbitMQ;
-
-public interface IRabbitMqSagaSerializer
-{
-    byte[] Serialize(OutputMessage inputMessage);
-    InputMessage? Deserialize(ReadOnlyMemory<byte> messageBytes);
-}
+namespace Prognetics.Saga.Queue.RabbitMQ.Serialization;
 
 class RabbitMqSagaSerializer : IRabbitMqSagaSerializer
 {

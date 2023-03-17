@@ -1,8 +1,12 @@
 ﻿using Prognetics.Saga.Orchestrator;
+using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
+using Prognetics.Saga.Queue.RabbitMQ.Consuming;
+using Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 using RabbitMQ.Client;
 
-namespace Prognetics.Saga.Queue.RabbitMQ;
-public class RabbitMqSagaHostingService
+namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
+
+class RabbitMqSagaHostingService : IRabbitMqSagaHostingService
 {
     private readonly IRabbitMqChannelFactory _rabbitMqChannelFactory;
     private readonly ISagaQueue _sagaQueue;

@@ -1,14 +1,7 @@
 ﻿using Prognetics.Saga.Orchestrator;
 using RabbitMQ.Client;
 
-namespace Prognetics.Saga.Queue.RabbitMQ;
-
-public interface IRabbitMqSagaConsumersFactory
-{
-    IReadOnlyList<RabbitMqConsumer> Create(
-        IModel channel,
-        ISagaQueue sagaQueue);
-}
+namespace Prognetics.Saga.Queue.RabbitMQ.Consuming;
 
 class RabbitMqSagaConsumersFactory : IRabbitMqSagaConsumersFactory
 {

@@ -1,14 +1,14 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Prognetics.Saga.Queue.RabbitMQ;
-public class RabbitMqSagaBackgroundService : BackgroundService
+namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
+class RabbitMqSagaBackgroundService : BackgroundService
 {
-    private readonly RabbitMqSagaHostingService _rabbitMqSagaHostedService;
+    private readonly IRabbitMqSagaHostingService _rabbitMqSagaHostedService;
     private readonly ILogger<RabbitMqSagaBackgroundService> _logger;
 
     public RabbitMqSagaBackgroundService(
-        RabbitMqSagaHostingService rabbitMqSagaHostedService,
+        IRabbitMqSagaHostingService rabbitMqSagaHostedService,
         ILogger<RabbitMqSagaBackgroundService> logger)
     {
         _rabbitMqSagaHostedService = rabbitMqSagaHostedService;

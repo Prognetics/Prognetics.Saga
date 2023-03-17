@@ -1,7 +1,9 @@
 ﻿using Prognetics.Saga.Orchestrator;
+using Prognetics.Saga.Queue.RabbitMQ.Configuration;
+using Prognetics.Saga.Queue.RabbitMQ.Serialization;
 using RabbitMQ.Client;
 
-namespace Prognetics.Saga.Queue.RabbitMQ;
+namespace Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 
 internal class RabbitMqSagaSubscriber : ISagaSubscriber
 {

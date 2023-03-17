@@ -1,16 +1,10 @@
 ﻿using Prognetics.Saga.Orchestrator;
+using Prognetics.Saga.Queue.RabbitMQ.Configuration;
+using Prognetics.Saga.Queue.RabbitMQ.Serialization;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System.Threading.Channels;
 
-namespace Prognetics.Saga.Queue.RabbitMQ;
-
-internal interface IRabbitMqSagaConsumerFactory
-{
-    IBasicConsumer Create(
-        IModel channel,
-        ISagaQueue sagaQueue);
-}
+namespace Prognetics.Saga.Queue.RabbitMQ.Consuming;
 
 class RabbitMqSagaConsumerFactory : IRabbitMqSagaConsumerFactory
 {

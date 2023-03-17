@@ -1,11 +1,7 @@
-﻿using RabbitMQ.Client;
+﻿using Prognetics.Saga.Queue.RabbitMQ.Configuration;
+using RabbitMQ.Client;
 
-namespace Prognetics.Saga.Queue.RabbitMQ;
-
-public interface IRabbitMqChannelFactory
-{
-    IModel Create();
-}
+namespace Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 
 class RabbitMqChannelFactory : IRabbitMqChannelFactory
 {
@@ -15,7 +11,7 @@ class RabbitMqChannelFactory : IRabbitMqChannelFactory
     public RabbitMqChannelFactory(
         RabbitMqSagaOptions options,
         IRabbitMqSagaQueuesProvider queuesFactory)
-	{
+    {
         _options = options;
         _queuesFactory = queuesFactory;
     }
