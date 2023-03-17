@@ -3,56 +3,59 @@ using Prognetics.Saga.Orchestrator;
 using RabbitMQ.Client;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Unit.Tests;
-public class RabbitMqSagaBackgroundServiceTests
+public class RabbitMqSagaHostingServiceTests
 {
 	[Fact]
-	public async Task Test()
+	public async Task WhenHostingServiceIsCorrectlyConfigured_ThenShouldConfigureChannelCorrectly()
 	{
-		const int stepsCount = 3;
+		// Arrange
+		const int consumersCount = 10;
 		var channel = Substitute.For<IModel>();
-		var connection = Substitute.For<IConnection>();
-		connection.CreateModel().Returns(channel);
-		var connectionFactory = Substitute.For<IRabbitMqConnectionFactory>();
-		connectionFactory.Create().Returns(connection);
-        var sagaModel = Substitute.For<ISagaModel>();
-		var transactions = new List<SagaTransaction>
-		{
-			new SagaTransaction
-			{
-				Steps = Enumerable.Range(0, stepsCount).Select(i => 
-					new SagaTransactionStep
-					{
-						From = $"From{i}", To = $"To{i}"
-					}).ToList()
-			},
-            new SagaTransaction
-            {
-                Steps = Enumerable.Range(0, stepsCount).Select(i =>
-                    new SagaTransactionStep
-                    {
-                        From = $"FromAnother{i}", To = $"ToAnother{i}"
-                    }).ToList()
-            },
-        };
+		var channelFactory = Substitute.For<IRabbitMqChannelFactory>();
+		channelFactory.Create().Returns(channel);
 
-		sagaModel.Transactions.Returns(transactions);
 		var sagaQueue = Substitute.For<ISagaQueue>();
 
-        var sut = new RabbitMqSagaBackgroundService(connectionFactory, sagaModel, sagaQueue);
-		var source = new CancellationTokenSource();
-		var task = sut.Listen(source.Token);
-		source.Cancel();
-		try
-		{
-			await task;
-		}
-		catch (TaskCanceledException) { };
+		var consumersFactory = Substitute.For<IRabbitMqSagaConsumersFactory>();
+		var subscriber = Substitute.For<ISagaSubscriber>();
+		var basicConsumer = Substitute.For<IBasicConsumer>();
+		var consumers = Enumerable.Range(0, consumersCount)
+			.Select(x => new RabbitMqConsumer
+			{
+				Queue = $"Queue{x}",
+				BasicConsumer = basicConsumer,
+			}).ToList();
+		consumersFactory.Create(channel, sagaQueue).Returns(consumers);
 
-		connectionFactory.Received().Create();
-		connection.Received().CreateModel();
-		channel.Received(stepsCount * transactions.Count).QueueDeclare(queue: Arg.Is<string>(x => x.Contains("From")));
-		channel.Received(stepsCount * transactions.Count).QueueDeclare(queue: Arg.Is<string>(x => x.Contains("To")));
-		channel.Received(stepsCount * transactions.Count).BasicConsume(Arg.Is<string>(x => x.Contains("From")), true, Arg.Any<IBasicConsumer>());
-		sagaQueue.Received().Subscribe(Arg.Any<Func<OutputMessage, Task>>());
-    }
+        var subscriberFactory = Substitute.For<IRabbitMqSagaSubscriberFactory>();
+        subscriberFactory.Create(channel).Returns(subscriber);
+
+		var sut = new RabbitMqSagaHostingService(
+			channelFactory,
+			sagaQueue,
+			consumersFactory,
+			subscriberFactory);
+
+		var source = new CancellationTokenSource();
+
+		// Act
+		var task = sut.Listen(source.Token);
+
+		// Assert
+		await Assert.ThrowsAsync<TaskCanceledException>(() => {
+			source.Cancel();
+			return task;
+		});
+
+		channel.Received(consumersCount).BasicConsume(
+			basicConsumer,
+			Arg.Is<string>(x => consumers.Select(x => x.Queue).Contains(x)),
+			false,
+			string.Empty,
+			false,
+			false,
+			null);
+
+		sagaQueue.Received().Subscribe(subscriber);
+	}
 }

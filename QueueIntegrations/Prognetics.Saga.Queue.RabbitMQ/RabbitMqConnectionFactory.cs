@@ -2,27 +2,46 @@
 
 namespace Prognetics.Saga.Queue.RabbitMQ;
 
-public interface IRabbitMqConnectionFactory
+public interface IRabbitMqChannelFactory
 {
-    IConnection Create();
+    IModel Create();
 }
 
-class RabbitMqConnectionFactory : IRabbitMqConnectionFactory
+class RabbitMqChannelFactory : IRabbitMqChannelFactory
 {
-    private readonly RabbitMqSagSettings _settings;
+    private readonly RabbitMqSagaOptions _options;
+    private readonly IRabbitMqSagaQueuesProvider _queuesFactory;
 
-    public RabbitMqConnectionFactory(RabbitMqSagSettings settings)
+    public RabbitMqChannelFactory(
+        RabbitMqSagaOptions options,
+        IRabbitMqSagaQueuesProvider queuesFactory)
 	{
-        _settings = settings;
+        _options = options;
+        _queuesFactory = queuesFactory;
     }
 
-    public IConnection Create()
+    public IModel Create()
     {
         var connectionFactory = new ConnectionFactory
         {
-            Uri = new Uri(_settings.ConnectionString),
-            DispatchConsumersAsync = true,
+            Uri = new Uri(_options.ConnectionString),
+            DispatchConsumersAsync = _options.DispatchConsumersAsync,
         };
-        return connectionFactory.CreateConnection();
+
+        var connection = connectionFactory.CreateConnection();
+        var channel = connection.CreateModel();
+        var queues = _queuesFactory.Queues;
+
+        foreach (var queue in queues)
+        {
+            channel.QueueDeclare(
+                queue.Name,
+                queue.Durable,
+                queue.Exclusive,
+                queue.AutoDelete,
+                queue.Arguments);
+        }
+
+        return channel;
     }
 }
