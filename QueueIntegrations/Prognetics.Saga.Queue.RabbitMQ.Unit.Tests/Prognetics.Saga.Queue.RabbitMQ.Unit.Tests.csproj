@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Prognetics.Saga.Queue.RabbitMQ\Prognetics.Saga.Queue.RabbitMQ.csproj" />
+    <ProjectReference Include="..\Prognetics.Saga.Queue.RabbitMQ\Prognetics.Saga.Queue.RabbitMq.csproj" />
   </ItemGroup>
 
 </Project>
