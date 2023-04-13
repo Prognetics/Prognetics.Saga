@@ -1,18 +1,17 @@
 ﻿namespace Prognetics.Saga.Orchestrator;
 
-public interface ISagaModel
+public class SagaModel
 {
-    IReadOnlyList<SagaTransaction> Transactions { get; }
+    public IReadOnlyList<SagaTransactionModel> Transactions { get; set; }
 }
 
-
-public class SagaTransaction
+public class SagaTransactionModel
 {
-    public IReadOnlyList<SagaTransactionStep> Steps { get; set; }
+    public required IReadOnlyList<SagaTransactionStepModel> Steps { get; init; }
 }
 
-public class SagaTransactionStep
+public class SagaTransactionStepModel
 {
-    public string From { get; set; }
-    public string To { get; set; }
+    public required string From { get; init; }
+    public required string To { get; init; }
 }

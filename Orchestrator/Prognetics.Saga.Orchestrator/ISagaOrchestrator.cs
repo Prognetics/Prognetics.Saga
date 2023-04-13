@@ -1,6 +1,6 @@
 ﻿namespace Prognetics.Saga.Orchestrator;
 
-public interface ISagaQueue
+public interface ISagaOrchestrator
 {
     Task Push(InputMessage inputMessage);
     void Subscribe(ISagaSubscriber sagaSubscriber);
