@@ -9,7 +9,7 @@ internal class RabbitMqSagaSubscriber : ISagaSubscriber
 {
     private readonly IRabbitMqSagaSerializer _serializer;
     private readonly IModel _model;
-    private IBasicProperties _properties;
+    private readonly IBasicProperties _properties;
     private readonly string _exchange;
 
     public RabbitMqSagaSubscriber(
@@ -24,7 +24,7 @@ internal class RabbitMqSagaSubscriber : ISagaSubscriber
         _exchange = options.Exchange;
     }
 
-    public Task Subscribe(OutputMessage message)
+    public Task OnMessage(OutputMessage message)
     {
         var messageBytes = _serializer.Serialize(message);
         _model.BasicPublish(_exchange, message.Name, _properties, messageBytes);

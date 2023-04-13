@@ -5,11 +5,11 @@ namespace Prognetics.Saga.Queue.RabbitMQ.Consuming;
 
 class RabbitMqSagaConsumersFactory : IRabbitMqSagaConsumersFactory
 {
-    private readonly ISagaModel _sagaModel;
+    private readonly SagaModel _sagaModel;
     private readonly IRabbitMqSagaConsumerFactory _rabbitMqSagaConsumerFactory;
 
     public RabbitMqSagaConsumersFactory(
-        ISagaModel sagaModel,
+        SagaModel sagaModel,
         IRabbitMqSagaConsumerFactory rabbitMqSagaConsumerFactory)
     {
         _sagaModel = sagaModel;
@@ -18,17 +18,17 @@ class RabbitMqSagaConsumersFactory : IRabbitMqSagaConsumersFactory
 
     public IReadOnlyList<RabbitMqConsumer> Create(
         IModel channel,
-        ISagaQueue sagaQueue)
+        ISagaOrchestrator sagaOrchestrator)
     {
         var consumer = _rabbitMqSagaConsumerFactory.Create(
             channel,
-            sagaQueue);
+            sagaOrchestrator);
 
         return _sagaModel.Transactions
             .SelectMany(x => x.Steps)
             .Select(x => new RabbitMqConsumer
             {
-                Queue = x.To,
+                Queue = x.From,
                 BasicConsumer = consumer
             })
             .ToList();

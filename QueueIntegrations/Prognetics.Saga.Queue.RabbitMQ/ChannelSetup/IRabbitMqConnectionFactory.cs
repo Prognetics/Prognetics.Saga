@@ -2,7 +2,7 @@
 
 namespace Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 
-public interface IRabbitMqChannelFactory
+public interface IRabbitMqConnectionFactory
 {
-    IModel Create();
+    IConnection Create();
 }

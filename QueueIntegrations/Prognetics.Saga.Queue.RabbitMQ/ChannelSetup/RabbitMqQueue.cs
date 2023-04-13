@@ -4,6 +4,8 @@ public class RabbitMqQueue
 {
     public required string Name { get; init; }
 
+    public string Exchange { get; init; } = string.Empty;
+
     public bool Durable { get; init; }
 
     public bool Exclusive { get; init; }

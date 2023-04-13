@@ -1,27 +1,35 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Prognetics.Saga.Orchestrator;
+using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
 class RabbitMqSagaBackgroundService : BackgroundService
 {
-    private readonly IRabbitMqSagaHostingService _rabbitMqSagaHostedService;
-    private readonly ILogger<RabbitMqSagaBackgroundService> _logger;
+    private readonly IRabbitMqSagaHost _rabbitMqSagaHost;
 
     public RabbitMqSagaBackgroundService(
-        IRabbitMqSagaHostingService rabbitMqSagaHostedService,
-        ILogger<RabbitMqSagaBackgroundService> logger)
+        IOptions<RabbitMqSagaOptions> options,
+        IOptions<SagaModel> sagaModel,
+        ILogger<IRabbitMqSagaHost> logger)
     {
-        _rabbitMqSagaHostedService = rabbitMqSagaHostedService;
-        _logger = logger;
+        _rabbitMqSagaHost = new RabbitMqSagaHostBuilder()
+            .With(options.Value)
+            .With(logger)
+            .Build(sagaModel.Value);
     }
 
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override Task ExecuteAsync(
+        CancellationToken cancellationToken)
     {
-        try
-        {
-            await _rabbitMqSagaHostedService.Listen(cancellationToken);
-        }
-        catch (OperationCanceledException)
-        { }
+        _rabbitMqSagaHost.Start();
+        return Task.CompletedTask;
+    }
+
+    public override void Dispose()
+    {
+        _rabbitMqSagaHost.Dispose();
+        base.Dispose();
     }
 }

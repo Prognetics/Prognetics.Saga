@@ -7,5 +7,5 @@ public interface IRabbitMqSagaConsumersFactory
 {
     IReadOnlyList<RabbitMqConsumer> Create(
         IModel channel,
-        ISagaQueue sagaQueue);
+        ISagaOrchestrator sagaQueue);
 }

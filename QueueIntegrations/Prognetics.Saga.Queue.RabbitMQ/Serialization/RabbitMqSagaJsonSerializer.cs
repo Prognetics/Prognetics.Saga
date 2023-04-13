@@ -1,21 +1,19 @@
 ﻿using System.Text.Json;
 using System.Text;
-using Prognetics.Saga.Orchestrator;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Serialization;
 
-class RabbitMqSagaSerializer : IRabbitMqSagaSerializer
+class RabbitMqSagaJsonSerializer : IRabbitMqSagaSerializer
 {
-    public byte[] Serialize(OutputMessage outputMessage)
+    public byte[] Serialize<T>(T outputMessage)
     {
         var serializedMessage = JsonSerializer.Serialize(outputMessage);
         return Encoding.UTF8.GetBytes(serializedMessage);
     }
 
-    public InputMessage? Deserialize(ReadOnlyMemory<byte> messageBytes)
+    public T Deserialize<T>(ReadOnlyMemory<byte> messageBytes)
     {
         var messageString = Encoding.UTF8.GetString(messageBytes.Span);
-        return JsonSerializer.Deserialize<InputMessage>(messageString);
+        return JsonSerializer.Deserialize<T>(messageString)!;
     }
-
 }

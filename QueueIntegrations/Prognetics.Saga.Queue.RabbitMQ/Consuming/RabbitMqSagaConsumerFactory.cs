@@ -21,19 +21,19 @@ class RabbitMqSagaConsumerFactory : IRabbitMqSagaConsumerFactory
 
     public IBasicConsumer Create(
         IModel channel,
-        ISagaQueue sagaQueue)
+        ISagaOrchestrator sagaQueue)
         => _options.DispatchConsumersAsync
         ? CreateAsyncConsumer(channel, sagaQueue)
         : CreateBasicConsumer(channel, sagaQueue);
 
     public IBasicConsumer CreateAsyncConsumer(
         IModel channel,
-        ISagaQueue sagaQueue)
+        ISagaOrchestrator sagaQueue)
     {
         var consumer = new AsyncEventingBasicConsumer(channel);
         consumer.Received += async (sender, e) =>
         {
-            var inputMessage = _serializer.Deserialize(e.Body);
+            var inputMessage = _serializer.Deserialize<InputMessage>(e.Body);
 
             if (inputMessage is null)
             {
@@ -41,6 +41,7 @@ class RabbitMqSagaConsumerFactory : IRabbitMqSagaConsumerFactory
             }
 
             await sagaQueue.Push(inputMessage);
+            channel.BasicAck(e.DeliveryTag, false);
         };
 
         return consumer;
@@ -48,12 +49,12 @@ class RabbitMqSagaConsumerFactory : IRabbitMqSagaConsumerFactory
 
     public IBasicConsumer CreateBasicConsumer(
         IModel channel,
-        ISagaQueue sagaQueue)
+        ISagaOrchestrator sagaQueue)
     {
         var consumer = new EventingBasicConsumer(channel);
         consumer.Received += (sender, e) =>
         {
-            var inputMessage = _serializer.Deserialize(e.Body);
+            var inputMessage = _serializer.Deserialize<InputMessage>(e.Body);
 
             if (inputMessage is null)
             {
@@ -61,6 +62,7 @@ class RabbitMqSagaConsumerFactory : IRabbitMqSagaConsumerFactory
             }
 
             sagaQueue.Push(inputMessage).GetAwaiter().GetResult();
+            channel.BasicAck(e.DeliveryTag, false);
         };
 
         return consumer;
