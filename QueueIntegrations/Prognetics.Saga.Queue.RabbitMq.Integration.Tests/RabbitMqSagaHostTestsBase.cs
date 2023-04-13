@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using NSubstitute;
 using Prognetics.Saga.Orchestrator;
 using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
@@ -7,8 +6,7 @@ using Prognetics.Saga.Queue.RabbitMQ.Consuming;
 using Prognetics.Saga.Queue.RabbitMQ.Hosting;
 using Prognetics.Saga.Queue.RabbitMQ.Serialization;
 using Prognetics.Saga.Queue.RabbitMQ.Subscribing;
-using RabbitMQ.Client.Events;
-using RabbitMQ.Client;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Prognetics.Saga.Queue.RabbitMq.Integration.Tests;
 
@@ -16,6 +14,7 @@ internal class RabbitMqSagaHostTestsBuilder
 {
     public SagaModel SagaModel { get; set; } = new();
     public RabbitMqSagaOptions RabbitMqSagaOptions { get; set; } = new();
+    public ILogger<IRabbitMqSagaHost> Logger { get; set; } = NullLogger<IRabbitMqSagaHost>.Instance;
     public IRabbitMqSagaSerializer? RabbitMqSagaSerializer { get; set; }
     public IRabbitMqConnectionFactory? RabbitMqConnectionFactory { get; set; }
     public ISagaOrchestrator? SagaOrchestrator { get; set; }
@@ -23,8 +22,6 @@ internal class RabbitMqSagaHostTestsBuilder
     public IRabbitMqSagaConsumersFactory? RabbitMqSagaConsumersFactory { get; set; }
     public IRabbitMqSagaConsumerFactory? RabbitMqSagaConsumerFactory { get; set; }
     public IRabbitMqSagaSubscriberFactory? SagaSubscriberFactory { get; set; }
-    public EventHandler<CallbackExceptionEventArgs> OnExceptionHandler { get; set; } = (_, _) => { };
-    public EventHandler<ShutdownEventArgs> OnShutdownHandler { get;set; } = (_, _) => { };
 
     public (RabbitMqSagaHost Host, RabbitMqSagaHostDependencies Dependencies) Build()
     {
@@ -48,9 +45,8 @@ internal class RabbitMqSagaHostTestsBuilder
             SagaSubscriberFactory = SagaSubscriberFactory ?? new RabbitMqSagaSubscriberFactory(
                 serializer,
                 RabbitMqSagaOptions),
-            OnExceptionHandler = OnExceptionHandler,
-            OnShutdownHandler = OnShutdownHandler,
-    };
+            Logger = Logger
+        };
 
         return (
             new(
@@ -59,8 +55,7 @@ internal class RabbitMqSagaHostTestsBuilder
                 dependencies.SagaOrchestrator,
                 dependencies.RabbitMqSagaConsumersFactory,
                 dependencies.SagaSubscriberFactory,
-                dependencies.OnExceptionHandler,
-                dependencies.OnShutdownHandler),
+                dependencies.Logger),
             dependencies);
     }
 }
@@ -76,6 +71,5 @@ internal class RabbitMqSagaHostDependencies
     public required IRabbitMqSagaConsumersFactory RabbitMqSagaConsumersFactory { get; init; }
     public required IRabbitMqSagaConsumerFactory RabbitMqSagaConsumerFactory { get; init; }
     public required IRabbitMqSagaSubscriberFactory SagaSubscriberFactory { get; init; }
-    public required EventHandler<CallbackExceptionEventArgs> OnExceptionHandler { get; init; }
-    public required EventHandler<ShutdownEventArgs> OnShutdownHandler { get; init; }
+    public required ILogger<IRabbitMqSagaHost> Logger { get; init; }
 }

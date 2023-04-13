@@ -19,7 +19,8 @@ public sealed class RabbitMqSagaBackgroundServiceTests :
     private readonly IBasicProperties _properties;
     private readonly RetryPolicy<BasicGetResult?> _gettingRetryPolicy = Policy
         .HandleResult<BasicGetResult?>(x => x == null)
-            .WaitAndRetry(10, _ => TimeSpan.FromMilliseconds(100));
+        .WaitAndRetry(10, _ => TimeSpan.FromMilliseconds(100));
+    private readonly IServiceCollection _services;
 
     public RabbitMqSagaBackgroundServiceTests(RabbitMqContainerFixture fixture)
     {
@@ -29,9 +30,12 @@ public sealed class RabbitMqSagaBackgroundServiceTests :
             Uri = new Uri(_fixture.Container.GetConnectionString()),
             DispatchConsumersAsync = true,
         }.CreateConnection();
+
         _channel = _connection.CreateModel();
         _properties = _channel.CreateBasicProperties();
         _properties.ContentType = "application/json";
+
+        _services = new ServiceCollection();
     }
 
     [Fact]
@@ -40,7 +44,6 @@ public sealed class RabbitMqSagaBackgroundServiceTests :
         // Arrange
         const string source = $"{nameof(IfBackgroundServiceIsRegistered_ThenTransactionShouldBeHandled)}_{nameof(source)}";
         const string target = $"{nameof(IfBackgroundServiceIsRegistered_ThenTransactionShouldBeHandled)}_{nameof(target)}";
-        var services = new ServiceCollection();
         var sagaModel = new SagaModelBuilder()
             .AddTransaction(x => x.AddStep(source, target))
             .Build();
@@ -56,13 +59,13 @@ public sealed class RabbitMqSagaBackgroundServiceTests :
         var serializer = new RabbitMqSagaJsonSerializer();
         var messageBytes = serializer.Serialize(inputMessage);
 
-        services.Configure<SagaModel>(x => 
+        _services.Configure<SagaModel>(x => 
             x.Transactions = sagaModel.Transactions);
-        services.Configure<RabbitMqSagaOptions>(x => 
+        _services.Configure<RabbitMqSagaOptions>(x =>
             x.ConnectionString = _fixture.Container.GetConnectionString());
-        services.AddHostedService<RabbitMqSagaBackgroundService>();
+        _services.AddHostedService<RabbitMqSagaBackgroundService>();
 
-        var serviceProvider = services.BuildServiceProvider();
+        var serviceProvider = _services.BuildServiceProvider();
 
         var backgroundQueue = serviceProvider.GetRequiredService<IHostedService>()
             as RabbitMqSagaBackgroundService;

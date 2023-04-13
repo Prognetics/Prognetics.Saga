@@ -1,6 +1,9 @@
-﻿using Polly;
+﻿using Microsoft.Extensions.Logging;
+using NSubstitute;
+using Polly;
 using Polly.Retry;
 using Prognetics.Saga.Orchestrator;
+using Prognetics.Saga.Queue.RabbitMQ.Hosting;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
@@ -78,16 +81,12 @@ public sealed class RabbitMqSagaHostTests : IClassFixture<RabbitMqContainerFixtu
     {
         const string queueSource = $"{nameof(IfExceptionOccurInOrchestrator_ThenExceptionShouldBeLogged)}_{nameof(queueSource)}";
         const string queueTarget = $"{nameof(IfExceptionOccurInOrchestrator_ThenExceptionShouldBeLogged)}_{nameof(queueTarget)}";
-        Exception? exception = null;
 
         _builder.SagaModel = new SagaModelBuilder()
             .AddTransaction(x => x.AddStep(queueSource, queueTarget))
             .Build();
 
-        _builder.OnExceptionHandler = (sender, e) =>
-        {
-            exception = e.Exception;
-        };
+        _builder.Logger = Substitute.For<ILogger<IRabbitMqSagaHost>>();
 
         (var sut, var dependencies) = _builder.Build();
         
@@ -111,10 +110,11 @@ public sealed class RabbitMqSagaHostTests : IClassFixture<RabbitMqContainerFixtu
 
         var result = _gettingRetryPolicy.Execute(() =>
             _channel.BasicGet(queueTarget, true));
-
+        
         // Assert
         Assert.Null(result);
-        Assert.NotNull(exception);
+        Assert.Single(dependencies.Logger.ReceivedCalls()
+            .Select(call => ((LogLevel?)call.GetArguments()[0]).Equals(LogLevel.Error)));
     }
 
     public void Dispose()
