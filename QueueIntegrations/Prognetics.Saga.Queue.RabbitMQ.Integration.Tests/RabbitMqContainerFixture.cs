@@ -1,16 +1,12 @@
-﻿using NSubstitute;
-using Polly;
-using Polly.Retry;
-using RabbitMQ.Client;
-using Testcontainers.RabbitMq;
+﻿using Testcontainers.RabbitMq;
 
-namespace Prognetics.Saga.Queue.RabbitMq.Integration.Tests;
+namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
 
-public class RabbitMqContainerFixture : IAsyncLifetime
+public class RabbitMQContainerFixture : IAsyncLifetime
 {
     public RabbitMqContainer Container { get; }
 
-    public RabbitMqContainerFixture()
+    public RabbitMQContainerFixture()
     {
         Container = new RabbitMqBuilder().Build();
     }

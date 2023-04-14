@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Serialization;
 
-public interface IRabbitMqSagaSerializer
+public interface IRabbitMQSagaSerializer
 {
     byte[] Serialize<T>(T outputMessage);
 

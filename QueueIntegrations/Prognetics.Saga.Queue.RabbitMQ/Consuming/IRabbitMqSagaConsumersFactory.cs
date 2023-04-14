@@ -3,9 +3,9 @@ using RabbitMQ.Client;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Consuming;
 
-public interface IRabbitMqSagaConsumersFactory
+public interface IRabbitMQSagaConsumersFactory
 {
-    IReadOnlyList<RabbitMqConsumer> Create(
+    IReadOnlyList<RabbitMQConsumer> Create(
         IModel channel,
         ISagaOrchestrator sagaQueue);
 }

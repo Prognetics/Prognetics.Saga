@@ -1,7 +1,7 @@
 ﻿namespace Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 
-public interface IRabbitMqSagaQueuesProvider
+public interface IRabbitMQSagaQueuesProvider
 {
-    public IReadOnlyList<RabbitMqQueue> Queues { get; }
+    public IReadOnlyList<RabbitMQQueue> Queues { get; }
     public string Exchange { get; }
 }

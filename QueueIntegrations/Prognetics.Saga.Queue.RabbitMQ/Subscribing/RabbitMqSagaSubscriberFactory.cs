@@ -5,21 +5,21 @@ using RabbitMQ.Client;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 
-class RabbitMqSagaSubscriberFactory : IRabbitMqSagaSubscriberFactory
+class RabbitMQSagaSubscriberFactory : IRabbitMQSagaSubscriberFactory
 {
-    private readonly IRabbitMqSagaSerializer _serializer;
-    private readonly RabbitMqSagaOptions _options;
+    private readonly IRabbitMQSagaSerializer _serializer;
+    private readonly RabbitMQSagaOptions _options;
 
-    public RabbitMqSagaSubscriberFactory(
-        IRabbitMqSagaSerializer serializer,
-        RabbitMqSagaOptions options)
+    public RabbitMQSagaSubscriberFactory(
+        IRabbitMQSagaSerializer serializer,
+        RabbitMQSagaOptions options)
     {
         _serializer = serializer;
         _options = options;
     }
 
     public ISagaSubscriber Create(IModel model)
-        => new RabbitMqSagaSubscriber(
+        => new RabbitMQSagaSubscriber(
             _serializer,
             model,
             _options);

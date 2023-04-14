@@ -3,20 +3,20 @@ using RabbitMQ.Client;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Consuming;
 
-class RabbitMqSagaConsumersFactory : IRabbitMqSagaConsumersFactory
+class RabbitMQSagaConsumersFactory : IRabbitMQSagaConsumersFactory
 {
     private readonly SagaModel _sagaModel;
-    private readonly IRabbitMqSagaConsumerFactory _rabbitMqSagaConsumerFactory;
+    private readonly IRabbitMQSagaConsumerFactory _rabbitMqSagaConsumerFactory;
 
-    public RabbitMqSagaConsumersFactory(
+    public RabbitMQSagaConsumersFactory(
         SagaModel sagaModel,
-        IRabbitMqSagaConsumerFactory rabbitMqSagaConsumerFactory)
+        IRabbitMQSagaConsumerFactory rabbitMqSagaConsumerFactory)
     {
         _sagaModel = sagaModel;
         _rabbitMqSagaConsumerFactory = rabbitMqSagaConsumerFactory;
     }
 
-    public IReadOnlyList<RabbitMqConsumer> Create(
+    public IReadOnlyList<RabbitMQConsumer> Create(
         IModel channel,
         ISagaOrchestrator sagaOrchestrator)
     {
@@ -26,7 +26,7 @@ class RabbitMqSagaConsumersFactory : IRabbitMqSagaConsumersFactory
 
         return _sagaModel.Transactions
             .SelectMany(x => x.Steps)
-            .Select(x => new RabbitMqConsumer
+            .Select(x => new RabbitMQConsumer
             {
                 Queue = x.From,
                 BasicConsumer = consumer

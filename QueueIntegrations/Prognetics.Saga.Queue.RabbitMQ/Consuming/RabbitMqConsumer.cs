@@ -2,7 +2,7 @@
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Consuming;
 
-public class RabbitMqConsumer
+public class RabbitMQConsumer
 {
     public required string Queue { get; init; }
     public bool AutoAck { get; init; }

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Serialization;
 
-class RabbitMqSagaJsonSerializer : IRabbitMqSagaSerializer
+class RabbitMQSagaJsonSerializer : IRabbitMQSagaSerializer
 {
     public byte[] Serialize<T>(T outputMessage)
     {

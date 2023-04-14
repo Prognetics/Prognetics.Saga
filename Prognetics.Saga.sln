@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Orchestrator", "Orchestrato
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QueueIntegrations", "QueueIntegrations", "{96144EF9-54CF-4A85-92D6-376A1FD2063C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Queue.RabbitMq", "QueueIntegrations\Prognetics.Saga.Queue.RabbitMQ\Prognetics.Saga.Queue.RabbitMq.csproj", "{44870873-4C88-4733-8754-98CA2BDD7C66}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Queue.RabbitMQ", "QueueIntegrations\Prognetics.Saga.Queue.RabbitMQ\Prognetics.Saga.Queue.RabbitMQ.csproj", "{44870873-4C88-4733-8754-98CA2BDD7C66}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Parsers", "Parsers", "{1C8734BE-A0B5-47B1-91E8-7FED1B34E1D8}"
 EndProject
@@ -19,9 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Orchestrato
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Parser.Json.Unit.Tests", "Parsers\Prognetics.Saga.Parser.Json.Unit.Tests\Prognetics.Saga.Parser.Json.Unit.Tests.csproj", "{032E29A9-C88C-467A-9015-4AC96A9468E3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Queue.RabbitMq.Unit.Tests", "QueueIntegrations\Prognetics.Saga.Queue.RabbitMQ.Unit.Tests\Prognetics.Saga.Queue.RabbitMq.Unit.Tests.csproj", "{6363B7BE-F9B2-4B24-B127-854ECC72F8B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Queue.RabbitMQ.Unit.Tests", "QueueIntegrations\Prognetics.Saga.Queue.RabbitMQ.Unit.Tests\Prognetics.Saga.Queue.RabbitMQ.Unit.Tests.csproj", "{6363B7BE-F9B2-4B24-B127-854ECC72F8B7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Queue.RabbitMq.Integration.Tests", "QueueIntegrations\Prognetics.Saga.Queue.RabbitMq.Integration.Tests\Prognetics.Saga.Queue.RabbitMq.Integration.Tests.csproj", "{4CCD633A-0EC2-42F1-B25F-8923DC5CED10}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Queue.RabbitMQ.Integration.Tests", "QueueIntegrations\Prognetics.Saga.Queue.RabbitMQ.Integration.Tests\Prognetics.Saga.Queue.RabbitMQ.Integration.Tests.csproj", "{4CCD633A-0EC2-42F1-B25F-8923DC5CED10}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

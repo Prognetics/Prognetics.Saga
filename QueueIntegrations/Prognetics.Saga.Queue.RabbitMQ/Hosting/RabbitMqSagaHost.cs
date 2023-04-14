@@ -8,24 +8,24 @@ using RabbitMQ.Client.Events;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
 
-class RabbitMqSagaHost  : IRabbitMqSagaHost
+class RabbitMQSagaHost  : IRabbitMQSagaHost
 {
-    private readonly IRabbitMqConnectionFactory _rabbitMqConnectionFactory;
+    private readonly IRabbitMQConnectionFactory _rabbitMqConnectionFactory;
     private readonly ISagaOrchestrator _sagaOrchestrator;
-    private readonly IRabbitMqSagaQueuesProvider _queuesProvider;
-    private readonly IRabbitMqSagaConsumersFactory _rabbitMqSagaConsumersFactory;
-    private readonly IRabbitMqSagaSubscriberFactory _sagaSubscriberFactory;
-    private readonly ILogger<IRabbitMqSagaHost> _logger;
+    private readonly IRabbitMQSagaQueuesProvider _queuesProvider;
+    private readonly IRabbitMQSagaConsumersFactory _rabbitMqSagaConsumersFactory;
+    private readonly IRabbitMQSagaSubscriberFactory _sagaSubscriberFactory;
+    private readonly ILogger<IRabbitMQSagaHost> _logger;
     private IConnection? _connection;
     private IModel? _channel;
 
-    public RabbitMqSagaHost(
-        IRabbitMqConnectionFactory rabbitMqConnectionFactory,
-        IRabbitMqSagaQueuesProvider queuesProvider,
+    public RabbitMQSagaHost(
+        IRabbitMQConnectionFactory rabbitMqConnectionFactory,
+        IRabbitMQSagaQueuesProvider queuesProvider,
         ISagaOrchestrator sagaOrchestrator,
-        IRabbitMqSagaConsumersFactory rabbitMqSagaConsumersFactory,
-        IRabbitMqSagaSubscriberFactory sagaSubscriberFactory,
-        ILogger<IRabbitMqSagaHost> logger)
+        IRabbitMQSagaConsumersFactory rabbitMqSagaConsumersFactory,
+        IRabbitMQSagaSubscriberFactory sagaSubscriberFactory,
+        ILogger<IRabbitMQSagaHost> logger)
     {
         _queuesProvider = queuesProvider;
         _rabbitMqSagaConsumersFactory = rabbitMqSagaConsumersFactory;

@@ -1,32 +1,27 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Polly;
 using Polly.Retry;
-using Polly;
 using Prognetics.Saga.Orchestrator;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 using Prognetics.Saga.Queue.RabbitMQ.Hosting;
 using RabbitMQ.Client;
-using System.Text.Json;
 using System.Text;
+using System.Text.Json;
 
-namespace Prognetics.Saga.Queue.RabbitMq.Integration.Tests;
-public sealed class RabbitMqSagaBackgroundServiceTests :
-    IClassFixture<RabbitMqContainerFixture>,
-    IDisposable
+namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
+public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixture>, IDisposable
 {
-    private readonly RabbitMqContainerFixture _fixture;
-    private readonly RabbitMqSagaHostBuilder _hostBuilder = new();
-    private readonly SagaModelBuilder _sagaModelBuilder = new();
-    private readonly RabbitMqSagaOptions _options = new();
+    private readonly RabbitMQContainerFixture _fixture;
+    private readonly RabbitMQSagaHostBuilder _hostBuilder = new ();
+    private readonly SagaModelBuilder _sagaModelBuilder = new ();
+    private readonly RabbitMQSagaOptions _options = new ();
     private readonly RetryPolicy<BasicGetResult?> _gettingRetryPolicy = Policy
         .HandleResult<BasicGetResult?>(x => x == null)
         .WaitAndRetry(10, _ => TimeSpan.FromMilliseconds(100));
     private readonly IModel _channel;
     private readonly IBasicProperties _properties;
     private readonly IConnection _connection;
-    private readonly IServiceCollection _services = new ServiceCollection();
 
-    public RabbitMqSagaBackgroundServiceTests(RabbitMqContainerFixture fixture)
+    public RabbitMQSagaHostTests(RabbitMQContainerFixture fixture)
     {
         _fixture = fixture;
         _options.ConnectionString = fixture.Container.GetConnectionString();
@@ -38,14 +33,13 @@ public sealed class RabbitMqSagaBackgroundServiceTests :
             DispatchConsumersAsync = _options.DispatchConsumersAsync
         }.CreateConnection();
 
-        _services.AddLogging();
         _channel = _connection.CreateModel();
         _properties = _channel.CreateBasicProperties();
         _properties.ContentType = _options.ContentType;
     }
 
     [Fact]
-    public async Task WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched()
+    public void WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched()
     {
         const string queueSource = $"{nameof(WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched)}_{nameof(queueSource)}";
         const string queueTarget = $"{nameof(WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched)}_{nameof(queueTarget)}";
@@ -54,6 +48,8 @@ public sealed class RabbitMqSagaBackgroundServiceTests :
             .AddTransaction(x => x
                 .AddStep(queueSource, queueTarget))
             .Build();
+
+        var sut = _hostBuilder.Build(sagaModel);
 
         var data = new TestData("Value");
         var messageTransactionId = Guid.NewGuid().ToString();
@@ -66,19 +62,8 @@ public sealed class RabbitMqSagaBackgroundServiceTests :
         var messageBytes = Encoding.UTF8.GetBytes(
             JsonSerializer.Serialize(inputMessage));
 
-        _services.Configure<SagaModel>(x =>
-            x.Transactions = sagaModel.Transactions);
-        _services.Configure<RabbitMqSagaOptions>(x =>
-            x.ConnectionString = _fixture.Container.GetConnectionString());
-        _services.AddHostedService<RabbitMqSagaBackgroundService>();
-
-        var serviceProvider = _services.BuildServiceProvider();
-
-        var backgroundQueue = serviceProvider.GetRequiredService<IHostedService>()
-            as RabbitMqSagaBackgroundService;
-
         // Act
-        await backgroundQueue!.StartAsync(CancellationToken.None);
+        sut.Start();
 
         _channel.BasicPublish(
             string.Empty,
@@ -99,7 +84,7 @@ public sealed class RabbitMqSagaBackgroundServiceTests :
     }
 
     [Fact]
-    public async Task IfMessegeIsSentInWrongFormat_ThenNoMessageShouldBeSend()
+    public void IfMessegeIsSentInWrongFormat_ThenNoMessageShouldBeSend()
     {
         const string queueSource = $"{nameof(IfMessegeIsSentInWrongFormat_ThenNoMessageShouldBeSend)}_{nameof(queueSource)}";
         const string queueTarget = $"{nameof(IfMessegeIsSentInWrongFormat_ThenNoMessageShouldBeSend)}_{nameof(queueTarget)}";
@@ -108,6 +93,8 @@ public sealed class RabbitMqSagaBackgroundServiceTests :
             .AddTransaction(x => x
                 .AddStep(queueSource, queueTarget))
             .Build();
+
+        var sut = _hostBuilder.Build(sagaModel);
 
         var data = new TestData("Value");
         var messageTransactionId = Guid.NewGuid().ToString();
@@ -118,21 +105,9 @@ public sealed class RabbitMqSagaBackgroundServiceTests :
             null);
 
         var messageBytes = Encoding.UTF8.GetBytes(inputMessage.ToString());
-
-        _services.Configure<SagaModel>(x =>
-            x.Transactions = sagaModel.Transactions);
-        _services.Configure<RabbitMqSagaOptions>(x =>
-            x.ConnectionString = _fixture.Container.GetConnectionString());
-        _services.AddHostedService<RabbitMqSagaBackgroundService>();
-
-        var serviceProvider = _services.BuildServiceProvider();
-
-        var backgroundQueue = serviceProvider.GetRequiredService<IHostedService>()
-            as RabbitMqSagaBackgroundService;
-
+        
         // Act
-        await backgroundQueue!.StartAsync(CancellationToken.None);
-
+        sut.Start();
         _channel.BasicPublish(
             string.Empty,
             queueSource,
@@ -141,13 +116,13 @@ public sealed class RabbitMqSagaBackgroundServiceTests :
 
         var result = _gettingRetryPolicy.Execute(() =>
             _channel.BasicGet(queueTarget, true));
-
+        
         // Assert
         Assert.Null(result);
     }
 
     [Fact]
-    public async Task IfMessageIsNotKnown_ThenMessageShouldNotBeSent()
+    public void IfMessageIsNotKnown_ThenMessageShouldNotBeSent()
     {
         const string queueSource = $"{nameof(IfMessegeIsSentInWrongFormat_ThenNoMessageShouldBeSend)}_{nameof(queueSource)}";
         const string queueTarget = $"{nameof(IfMessegeIsSentInWrongFormat_ThenNoMessageShouldBeSend)}_{nameof(queueTarget)}";
@@ -170,20 +145,8 @@ public sealed class RabbitMqSagaBackgroundServiceTests :
         var messageBytes = Encoding.UTF8.GetBytes(
             JsonSerializer.Serialize(inputMessage));
 
-        _services.Configure<SagaModel>(x =>
-            x.Transactions = sagaModel.Transactions);
-        _services.Configure<RabbitMqSagaOptions>(x =>
-            x.ConnectionString = _fixture.Container.GetConnectionString());
-        _services.AddHostedService<RabbitMqSagaBackgroundService>();
-
-        var serviceProvider = _services.BuildServiceProvider();
-
-        var backgroundQueue = serviceProvider.GetRequiredService<IHostedService>()
-            as RabbitMqSagaBackgroundService;
-
         // Act
-        await backgroundQueue!.StartAsync(CancellationToken.None);
-
+        sut.Start();
         _channel.BasicPublish(
             string.Empty,
             queueSource,
@@ -198,52 +161,35 @@ public sealed class RabbitMqSagaBackgroundServiceTests :
     }
 
     [Fact]
-    public void WhenContentTypeIsUnknown_ThenExceptionShouldBeThrownDuringResolvingTheHostedService()
+    public void WhenContentTypeIsUnknown_ThenExceptionShouldBeThrownDuringBuilding()
     {
         // Arrange
-        _services.Configure<RabbitMqSagaOptions>(x =>
-        {
-            x.ConnectionString = _fixture.Container.GetConnectionString();
-            x.ContentType = "Unknown";
-        });
-
-        _services.AddHostedService<RabbitMqSagaBackgroundService>();
-
-        var serviceProvider = _services.BuildServiceProvider();
+        _options.ContentType = "Unknown";
 
         // Act
-        var resolving = () => { serviceProvider.GetRequiredService<IHostedService>(); };
+        var building = () => { _hostBuilder.Build(new SagaModel()); };
 
         // Assert
-        Assert.Throws<NotSupportedException>(resolving);
+        Assert.Throws<NotSupportedException>(building);
     }
 
     [Fact]
-    public async Task WhenConnectionStringIsInvalid_ThenExceptionShouldBeThrownDuringStart()
+    public void WhenConnectionStringIsInvalid_ThenExceptionShouldBeThrownDuringStart()
     {
         // Arrange
-        _services.Configure<RabbitMqSagaOptions>(x =>
-        {
-            x.ConnectionString = "amqp://user:pass@host:10000/vhost";
-        });
-
-        _services.AddHostedService<RabbitMqSagaBackgroundService>();
-
-        var serviceProvider = _services.BuildServiceProvider();
-
-        var backgroundQueue = serviceProvider.GetRequiredService<IHostedService>()
-            as RabbitMqSagaBackgroundService;
+        _options.ConnectionString = "amqp://user:pass@host:10000/vhost";
+        var sut = _hostBuilder.Build(new SagaModel());
 
         // Act
-        var starting = () => backgroundQueue!.StartAsync(CancellationToken.None);
+        var starting = sut.Start;
 
         // Assert
-        await Assert.ThrowsAnyAsync<Exception>(starting);
+        Assert.ThrowsAny<Exception>(starting);
     }
 
     public void Dispose()
     {
-        _connection.Dispose();
         _channel.Dispose();
+        _connection.Dispose();
     }
 }

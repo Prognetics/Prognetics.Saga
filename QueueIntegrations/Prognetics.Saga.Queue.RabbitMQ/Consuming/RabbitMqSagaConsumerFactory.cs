@@ -6,14 +6,14 @@ using RabbitMQ.Client.Events;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Consuming;
 
-class RabbitMqSagaConsumerFactory : IRabbitMqSagaConsumerFactory
+class RabbitMQSagaConsumerFactory : IRabbitMQSagaConsumerFactory
 {
-    private readonly RabbitMqSagaOptions _options;
-    private readonly IRabbitMqSagaSerializer _serializer;
+    private readonly RabbitMQSagaOptions _options;
+    private readonly IRabbitMQSagaSerializer _serializer;
 
-    public RabbitMqSagaConsumerFactory(
-        RabbitMqSagaOptions options,
-        IRabbitMqSagaSerializer serializer)
+    public RabbitMQSagaConsumerFactory(
+        RabbitMQSagaOptions options,
+        IRabbitMQSagaSerializer serializer)
     {
         _options = options;
         _serializer = serializer;

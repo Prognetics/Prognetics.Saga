@@ -3,7 +3,7 @@ using RabbitMQ.Client;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 
-public interface IRabbitMqSagaSubscriberFactory
+public interface IRabbitMQSagaSubscriberFactory
 {
     ISagaSubscriber Create(IModel model);
 }

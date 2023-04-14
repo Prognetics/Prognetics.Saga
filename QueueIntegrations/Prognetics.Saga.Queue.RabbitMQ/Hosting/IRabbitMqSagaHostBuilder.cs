@@ -2,7 +2,7 @@
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
 
-public interface IRabbitMqSagaHostBuilder
+public interface IRabbitMQSagaHostBuilder
 {
-    IRabbitMqSagaHost Build(SagaModel sagaModel);
+    IRabbitMQSagaHost Build(SagaModel sagaModel);
 }

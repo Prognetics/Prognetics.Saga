@@ -9,38 +9,38 @@ using Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 using RabbitMQ.Client;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Unit.Tests;
-public class RabbitMqSagaHostTests
+public class RabbitMQSagaHostTests
 {
     private readonly IConnection _connection;
     private readonly IModel _channel;
-    private readonly IRabbitMqConnectionFactory _connectionFactory;
-    private readonly IRabbitMqSagaQueuesProvider _sagaQueuesProvider;
+    private readonly IRabbitMQConnectionFactory _connectionFactory;
+    private readonly IRabbitMQSagaQueuesProvider _sagaQueuesProvider;
     private readonly ISagaOrchestrator _sagaOrchestrator;
-    private readonly IRabbitMqSagaConsumersFactory _consumersFactory;
+    private readonly IRabbitMQSagaConsumersFactory _consumersFactory;
     private readonly ISagaSubscriber _subscriber;
     private readonly IBasicConsumer _basicConsumer;
-    private readonly IRabbitMqSagaSubscriberFactory _subscriberFactory;
-    private readonly ILogger<IRabbitMqSagaHost> _logger;
-    private readonly RabbitMqSagaHost _sut;
+    private readonly IRabbitMQSagaSubscriberFactory _subscriberFactory;
+    private readonly ILogger<IRabbitMQSagaHost> _logger;
+    private readonly RabbitMQSagaHost _sut;
 
-    public RabbitMqSagaHostTests()
+    public RabbitMQSagaHostTests()
     {
         _channel = Substitute.For<IModel>();
         _connection = Substitute.For<IConnection>();
-        _connectionFactory = Substitute.For<IRabbitMqConnectionFactory>();
-        _sagaQueuesProvider = Substitute.For<IRabbitMqSagaQueuesProvider>();
+        _connectionFactory = Substitute.For<IRabbitMQConnectionFactory>();
+        _sagaQueuesProvider = Substitute.For<IRabbitMQSagaQueuesProvider>();
         _sagaOrchestrator = Substitute.For<ISagaOrchestrator>();
-        _consumersFactory = Substitute.For<IRabbitMqSagaConsumersFactory>();
+        _consumersFactory = Substitute.For<IRabbitMQSagaConsumersFactory>();
         _subscriber = Substitute.For<ISagaSubscriber>();
         _basicConsumer = Substitute.For<IBasicConsumer>();
-        _subscriberFactory = Substitute.For<IRabbitMqSagaSubscriberFactory>();
-        _logger = Substitute.For<ILogger<IRabbitMqSagaHost>>();
+        _subscriberFactory = Substitute.For<IRabbitMQSagaSubscriberFactory>();
+        _logger = Substitute.For<ILogger<IRabbitMQSagaHost>>();
 
         _connectionFactory.Create().Returns(_connection);
         _connection.CreateModel().Returns(_channel);
         _subscriberFactory.Create(_channel).Returns(_subscriber);
 
-        _sut = new RabbitMqSagaHost(
+        _sut = new RabbitMQSagaHost(
             _connectionFactory,
             _sagaQueuesProvider,
             _sagaOrchestrator,
@@ -55,13 +55,13 @@ public class RabbitMqSagaHostTests
 		// Arrange
 		const int queuesCount = 10;
         var queues = Enumerable.Range(0, queuesCount)
-            .Select(x => new RabbitMqQueue { Name = $"Queue{x}" })
+            .Select(x => new RabbitMQQueue { Name = $"Queue{x}" })
             .ToList();
 
         _sagaQueuesProvider.Queues.Returns(queues);
 
         var consumers = Enumerable.Range(0, queuesCount)
-			.Select(x => new RabbitMqConsumer
+			.Select(x => new RabbitMQConsumer
 			{
 				Queue = queues[x].Name,
 				BasicConsumer = _basicConsumer,

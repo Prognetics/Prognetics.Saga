@@ -1,6 +1,6 @@
 ﻿namespace Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 
-public class RabbitMqQueue
+public class RabbitMQQueue
 {
     public required string Name { get; init; }
 

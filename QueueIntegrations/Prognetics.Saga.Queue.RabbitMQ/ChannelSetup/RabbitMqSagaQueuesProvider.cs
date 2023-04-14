@@ -3,25 +3,25 @@ using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 
-class RabbitMqSagaQueuesProvider : IRabbitMqSagaQueuesProvider
+class RabbitMQSagaQueuesProvider : IRabbitMQSagaQueuesProvider
 {
-    public RabbitMqSagaQueuesProvider(
+    public RabbitMQSagaQueuesProvider(
         SagaModel sagaModel,
-        RabbitMqSagaOptions options)
+        RabbitMQSagaOptions options)
     {
         Queues = sagaModel.Transactions
             .SelectMany(x => x.Steps)
             .Aggregate(
-                new List<RabbitMqQueue>(),
+                new List<RabbitMQQueue>(),
                 (acc, step) =>
                 {
-                    acc.Add(new RabbitMqQueue { Name = step.From });
-                    acc.Add(new RabbitMqQueue { Name = step.To });
+                    acc.Add(new RabbitMQQueue { Name = step.From });
+                    acc.Add(new RabbitMQQueue { Name = step.To });
                     return acc;
                 });
         Exchange = options.Exchange;
     }
 
-    public IReadOnlyList<RabbitMqQueue> Queues { get; }
+    public IReadOnlyList<RabbitMQQueue> Queues { get; }
     public string Exchange { get; }
 }

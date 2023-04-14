@@ -1,6 +1,6 @@
 ﻿namespace Prognetics.Saga.Queue.RabbitMQ.Configuration;
 
-public class RabbitMqSagaOptions
+public class RabbitMQSagaOptions
 {
     public string ConnectionString { get; set; } = string.Empty;
     public string ContentType { get; set; } = "application/json";

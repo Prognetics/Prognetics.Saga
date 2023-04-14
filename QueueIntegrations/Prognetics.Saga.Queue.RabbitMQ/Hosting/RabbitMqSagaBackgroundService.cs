@@ -5,16 +5,16 @@ using Prognetics.Saga.Orchestrator;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
-class RabbitMqSagaBackgroundService : BackgroundService
+class RabbitMQSagaBackgroundService : BackgroundService
 {
-    private readonly IRabbitMqSagaHost _rabbitMqSagaHost;
+    private readonly IRabbitMQSagaHost _rabbitMqSagaHost;
 
-    public RabbitMqSagaBackgroundService(
-        IOptions<RabbitMqSagaOptions> options,
+    public RabbitMQSagaBackgroundService(
+        IOptions<RabbitMQSagaOptions> options,
         IOptions<SagaModel> sagaModel,
-        ILogger<IRabbitMqSagaHost> logger)
+        ILogger<IRabbitMQSagaHost> logger)
     {
-        _rabbitMqSagaHost = new RabbitMqSagaHostBuilder()
+        _rabbitMqSagaHost = new RabbitMQSagaHostBuilder()
             .With(options.Value)
             .With(logger)
             .Build(sagaModel.Value);
