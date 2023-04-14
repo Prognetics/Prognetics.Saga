@@ -2,6 +2,6 @@
 
 public interface ISagaOrchestrator
 {
-    Task Push(InputMessage inputMessage);
+    Task Push(string queueName, InputMessage inputMessage);
     void Subscribe(ISagaSubscriber sagaSubscriber);
 }

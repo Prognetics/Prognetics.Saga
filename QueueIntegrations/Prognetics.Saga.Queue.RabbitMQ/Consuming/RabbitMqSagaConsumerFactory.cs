@@ -39,8 +39,8 @@ class RabbitMQSagaConsumerFactory : IRabbitMQSagaConsumerFactory
             {
                 return;
             }
-
-            await sagaQueue.Push(inputMessage);
+            
+            await sagaQueue.Push(e.RoutingKey, inputMessage);
             channel.BasicAck(e.DeliveryTag, false);
         };
 
@@ -61,7 +61,7 @@ class RabbitMQSagaConsumerFactory : IRabbitMQSagaConsumerFactory
                 return;
             }
 
-            sagaQueue.Push(inputMessage).GetAwaiter().GetResult();
+            sagaQueue.Push(e.RoutingKey, inputMessage).GetAwaiter().GetResult();
             channel.BasicAck(e.DeliveryTag, false);
         };
 

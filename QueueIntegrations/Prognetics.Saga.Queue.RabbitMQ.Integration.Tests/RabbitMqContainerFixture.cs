@@ -22,3 +22,4 @@ public class RabbitMQContainerFixture : IAsyncLifetime
         await Container.DisposeAsync();
     }
 }
+ 

@@ -59,7 +59,6 @@ public sealed class RabbitMQSagaBackgroundServiceTests :
         var messageTransactionId = Guid.NewGuid().ToString();
         var inputMessage = new InputMessage(
             messageTransactionId,
-            queueSource,
             data,
             null);
 
@@ -94,7 +93,6 @@ public sealed class RabbitMQSagaBackgroundServiceTests :
         var message = JsonSerializer.Deserialize<OutputMessage>(Encoding.UTF8.GetString(result.Body.Span));
         Assert.NotNull(message);
         Assert.Equal(messageTransactionId, message?.TransactionId);
-        Assert.Equal(queueTarget, message?.Name);
         Assert.Equal(data, ((JsonElement)message!.Payload).Deserialize<TestData>());
     }
 
@@ -113,7 +111,6 @@ public sealed class RabbitMQSagaBackgroundServiceTests :
         var messageTransactionId = Guid.NewGuid().ToString();
         var inputMessage = new InputMessage(
             messageTransactionId,
-            queueSource,
             data,
             null);
 
@@ -163,7 +160,6 @@ public sealed class RabbitMQSagaBackgroundServiceTests :
         var messageTransactionId = Guid.NewGuid().ToString();
         var inputMessage = new InputMessage(
             messageTransactionId,
-            "NotKnownMessageName",
             data,
             null);
 
@@ -186,7 +182,7 @@ public sealed class RabbitMQSagaBackgroundServiceTests :
 
         _channel.BasicPublish(
             string.Empty,
-            queueSource,
+            "NotKnownMessageName",
             _properties,
             messageBytes);
 

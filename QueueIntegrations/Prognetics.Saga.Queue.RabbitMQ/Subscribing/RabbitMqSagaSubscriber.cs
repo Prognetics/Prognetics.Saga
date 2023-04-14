@@ -24,10 +24,10 @@ internal class RabbitMQSagaSubscriber : ISagaSubscriber
         _exchange = options.Exchange;
     }
 
-    public Task OnMessage(OutputMessage message)
+    public Task OnMessage(string queueName, OutputMessage message)
     {
         var messageBytes = _serializer.Serialize(message);
-        _model.BasicPublish(_exchange, message.Name, _properties, messageBytes);
+        _model.BasicPublish(_exchange, queueName, _properties, messageBytes);
         return Task.CompletedTask;
     }
 }

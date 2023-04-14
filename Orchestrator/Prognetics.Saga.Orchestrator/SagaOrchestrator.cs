@@ -14,13 +14,13 @@ class SagaOrchestrator : ISagaOrchestrator
                 x => x.To);
     }
 
-    public Task Push(InputMessage inputMessage)
+    public Task Push(string queueName, InputMessage inputMessage)
         => _sagaSubscriber?.OnMessage(
+             _steps.TryGetValue(queueName, out var nextStep)
+                ? nextStep
+                : throw new ArgumentException("Wrong input message", nameof(inputMessage)),
             new OutputMessage(
-                inputMessage.TransactionId ?? Guid.NewGuid().ToString() ,
-                 _steps.TryGetValue(inputMessage.Name, out var nextStep)
-                    ? nextStep
-                    : throw new ArgumentException("Wrong input message", nameof(inputMessage)),
+                inputMessage.TransactionId ?? Guid.NewGuid().ToString(),
                 inputMessage.Payload))
         ?? Task.CompletedTask;
 
