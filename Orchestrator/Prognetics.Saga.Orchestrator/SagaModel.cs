@@ -2,12 +2,12 @@
 
 public class SagaModel
 {
-    public IReadOnlyList<SagaTransactionModel> Transactions { get; set; }
+    public IReadOnlyList<SagaTransactionModel> Transactions { get; set; } = new List<SagaTransactionModel>();
 }
 
 public class SagaTransactionModel
 {
-    public required IReadOnlyList<SagaTransactionStepModel> Steps { get; init; }
+    public IReadOnlyList<SagaTransactionStepModel> Steps { get; init; } = new List<SagaTransactionStepModel>();
 }
 
 public class SagaTransactionStepModel

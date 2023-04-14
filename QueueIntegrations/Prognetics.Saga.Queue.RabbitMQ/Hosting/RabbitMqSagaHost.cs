@@ -8,7 +8,7 @@ using RabbitMQ.Client.Events;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
 
-class RabbitMqSagaHost : IRabbitMqSagaHost
+class RabbitMqSagaHost  : IRabbitMqSagaHost
 {
     private readonly IRabbitMqConnectionFactory _rabbitMqConnectionFactory;
     private readonly ISagaOrchestrator _sagaOrchestrator;

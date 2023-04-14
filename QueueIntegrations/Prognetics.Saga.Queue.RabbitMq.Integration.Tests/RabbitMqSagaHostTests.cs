@@ -1,8 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
-using NSubstitute;
-using Polly;
+﻿using Polly;
 using Polly.Retry;
 using Prognetics.Saga.Orchestrator;
+using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 using Prognetics.Saga.Queue.RabbitMQ.Hosting;
 using RabbitMQ.Client;
 using System.Text;
@@ -12,10 +11,12 @@ namespace Prognetics.Saga.Queue.RabbitMq.Integration.Tests;
 public sealed class RabbitMqSagaHostTests : IClassFixture<RabbitMqContainerFixture>, IDisposable
 {
     private readonly RabbitMqContainerFixture _fixture;
-    private readonly RabbitMqSagaHostTestsBuilder _builder = new();
+    private readonly RabbitMqSagaHostBuilder _hostBuilder = new ();
+    private readonly SagaModelBuilder _sagaModelBuilder = new ();
+    private readonly RabbitMqSagaOptions _options = new ();
     private readonly RetryPolicy<BasicGetResult?> _gettingRetryPolicy = Policy
         .HandleResult<BasicGetResult?>(x => x == null)
-            .WaitAndRetry(10, _ => TimeSpan.FromMilliseconds(100));
+        .WaitAndRetry(10, _ => TimeSpan.FromMilliseconds(100));
     private readonly IModel _channel;
     private readonly IBasicProperties _properties;
     private readonly IConnection _connection;
@@ -23,15 +24,18 @@ public sealed class RabbitMqSagaHostTests : IClassFixture<RabbitMqContainerFixtu
     public RabbitMqSagaHostTests(RabbitMqContainerFixture fixture)
     {
         _fixture = fixture;
-        _builder.RabbitMqSagaOptions.ConnectionString = fixture.Container.GetConnectionString();
+        _options.ConnectionString = fixture.Container.GetConnectionString();
+        _hostBuilder.With(_options);
+
         _connection = new ConnectionFactory
         {
-            Uri = new Uri(_builder.RabbitMqSagaOptions.ConnectionString),
-            DispatchConsumersAsync = _builder.RabbitMqSagaOptions.DispatchConsumersAsync
+            Uri = new Uri(_options.ConnectionString),
+            DispatchConsumersAsync = _options.DispatchConsumersAsync
         }.CreateConnection();
+
         _channel = _connection.CreateModel();
         _properties = _channel.CreateBasicProperties();
-        _properties.ContentType = _builder.RabbitMqSagaOptions.ContentType;
+        _properties.ContentType = _options.ContentType;
     }
 
     [Fact]
@@ -40,9 +44,12 @@ public sealed class RabbitMqSagaHostTests : IClassFixture<RabbitMqContainerFixtu
         const string queueSource = $"{nameof(WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched)}_{nameof(queueSource)}";
         const string queueTarget = $"{nameof(WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched)}_{nameof(queueTarget)}";
 
-        _builder.SagaModel = new SagaModelBuilder()
-            .AddTransaction(x => x.AddStep(queueSource, queueTarget))
+        var sagaModel = _sagaModelBuilder
+            .AddTransaction(x => x
+                .AddStep(queueSource, queueTarget))
             .Build();
+
+        var sut = _hostBuilder.Build(sagaModel);
 
         var data = new TestData("Value");
         var messageTransactionId = Guid.NewGuid().ToString();
@@ -52,8 +59,8 @@ public sealed class RabbitMqSagaHostTests : IClassFixture<RabbitMqContainerFixtu
             data,
             null);
 
-        (var sut, var dependencies) = _builder.Build();
-        var messageBytes = dependencies.RabbitMqSagaSerializer.Serialize(inputMessage);
+        var messageBytes = Encoding.UTF8.GetBytes(
+            JsonSerializer.Serialize(inputMessage));
 
         // Act
         sut.Start();
@@ -69,7 +76,7 @@ public sealed class RabbitMqSagaHostTests : IClassFixture<RabbitMqContainerFixtu
 
         // Assert
         Assert.NotNull(result);
-        var message = dependencies.RabbitMqSagaSerializer.Deserialize<OutputMessage>(result.Body);
+        var message = JsonSerializer.Deserialize<OutputMessage>(Encoding.UTF8.GetString(result.Body.Span));
         Assert.NotNull(message);
         Assert.Equal(messageTransactionId, message?.TransactionId);
         Assert.Equal(queueTarget, message?.Name);
@@ -77,19 +84,18 @@ public sealed class RabbitMqSagaHostTests : IClassFixture<RabbitMqContainerFixtu
     }
 
     [Fact]
-    public void IfExceptionOccurInOrchestrator_ThenExceptionShouldBeLogged()
+    public void IfMessegeIsSentInWrongFormat_ThenNoMessageShouldBeSend()
     {
-        const string queueSource = $"{nameof(IfExceptionOccurInOrchestrator_ThenExceptionShouldBeLogged)}_{nameof(queueSource)}";
-        const string queueTarget = $"{nameof(IfExceptionOccurInOrchestrator_ThenExceptionShouldBeLogged)}_{nameof(queueTarget)}";
+        const string queueSource = $"{nameof(IfMessegeIsSentInWrongFormat_ThenNoMessageShouldBeSend)}_{nameof(queueSource)}";
+        const string queueTarget = $"{nameof(IfMessegeIsSentInWrongFormat_ThenNoMessageShouldBeSend)}_{nameof(queueTarget)}";
 
-        _builder.SagaModel = new SagaModelBuilder()
-            .AddTransaction(x => x.AddStep(queueSource, queueTarget))
+        var sagaModel = _sagaModelBuilder
+            .AddTransaction(x => x
+                .AddStep(queueSource, queueTarget))
             .Build();
 
-        _builder.Logger = Substitute.For<ILogger<IRabbitMqSagaHost>>();
+        var sut = _hostBuilder.Build(sagaModel);
 
-        (var sut, var dependencies) = _builder.Build();
-        
         var data = new TestData("Value");
         var messageTransactionId = Guid.NewGuid().ToString();
         var inputMessage = new InputMessage(
@@ -113,8 +119,72 @@ public sealed class RabbitMqSagaHostTests : IClassFixture<RabbitMqContainerFixtu
         
         // Assert
         Assert.Null(result);
-        Assert.Single(dependencies.Logger.ReceivedCalls()
-            .Select(call => ((LogLevel?)call.GetArguments()[0]).Equals(LogLevel.Error)));
+    }
+
+    [Fact]
+    public void IfMessageIsNotKnown_ThenMessageShouldNotBeSent()
+    {
+        const string queueSource = $"{nameof(IfMessegeIsSentInWrongFormat_ThenNoMessageShouldBeSend)}_{nameof(queueSource)}";
+        const string queueTarget = $"{nameof(IfMessegeIsSentInWrongFormat_ThenNoMessageShouldBeSend)}_{nameof(queueTarget)}";
+
+        var sagaModel = _sagaModelBuilder
+            .AddTransaction(x => x
+                .AddStep(queueSource, queueTarget))
+            .Build();
+
+        var sut = _hostBuilder.Build(sagaModel);
+
+        var data = new TestData("Value");
+        var messageTransactionId = Guid.NewGuid().ToString();
+        var inputMessage = new InputMessage(
+            messageTransactionId,
+            "NotKnownMessageName",
+            data,
+            null);
+
+        var messageBytes = Encoding.UTF8.GetBytes(
+            JsonSerializer.Serialize(inputMessage));
+
+        // Act
+        sut.Start();
+        _channel.BasicPublish(
+            string.Empty,
+            queueSource,
+            _properties,
+            messageBytes);
+
+        var result = _gettingRetryPolicy.Execute(() =>
+            _channel.BasicGet(queueTarget, true));
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void WhenContentTypeIsUnknown_ThenExceptionShouldBeThrownDuringBuilding()
+    {
+        // Arrange
+        _options.ContentType = "Unknown";
+
+        // Act
+        var building = () => { _hostBuilder.Build(new SagaModel()); };
+
+        // Assert
+        Assert.Throws<NotSupportedException>(building);
+    }
+
+    [Fact]
+    public void WhenConnectionStringIsInvalid_ThenExceptionShouldBeThrownDuringStart()
+    {
+        // Arrange
+        _options.ConnectionString = "amqp://user:pass@host:10000/vhost";
+        var sut = _hostBuilder.Build(new SagaModel());
+
+        // Act
+        var starting = sut.Start;
+
+        // Assert
+        Assert.ThrowsAny<Exception>(starting);
     }
 
     public void Dispose()

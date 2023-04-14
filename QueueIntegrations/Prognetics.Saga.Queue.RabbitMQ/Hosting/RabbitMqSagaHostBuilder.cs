@@ -31,7 +31,7 @@ public class RabbitMqSagaHostBuilder : IRabbitMqSagaHostBuilder
         var sagaOrchestrator = SagaOrchestratorBuilder.Build(sagaModel);
         var serializer = _options.ContentType == "application/json"
             ? new RabbitMqSagaJsonSerializer()
-            : throw new NotSupportedException();
+            : throw new NotSupportedException($"Provided content type not supported: {_options.ContentType}");
 
         return new RabbitMqSagaHost(
             new RabbitMqConnectionFactory(_options),

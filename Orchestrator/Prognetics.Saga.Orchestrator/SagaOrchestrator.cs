@@ -17,7 +17,7 @@ class SagaOrchestrator : ISagaOrchestrator
     public Task Push(InputMessage inputMessage)
         => _sagaSubscriber?.OnMessage(
             new OutputMessage(
-                inputMessage.TransactionId,
+                inputMessage.TransactionId ?? Guid.NewGuid().ToString() ,
                  _steps.TryGetValue(inputMessage.Name, out var nextStep)
                     ? nextStep
                     : throw new ArgumentException("Wrong input message", nameof(inputMessage)),
