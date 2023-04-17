@@ -38,11 +38,15 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
         _properties.ContentType = _options.ContentType;
     }
 
-    [Fact]
-    public void WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched()
+    [Theory]
+    [InlineData("")]
+    [InlineData("saga")]
+    public void WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched(string exchangeName)
     {
         const string queueSource = $"{nameof(WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched)}_{nameof(queueSource)}";
         const string queueTarget = $"{nameof(WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched)}_{nameof(queueTarget)}";
+        
+        _options.Exchange = exchangeName;
 
         var sagaModel = _sagaModelBuilder
             .AddTransaction(x => x
@@ -65,7 +69,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
         sut.Start();
 
         _channel.BasicPublish(
-            string.Empty,
+            exchangeName,
             queueSource,
             _properties,
             messageBytes);

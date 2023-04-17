@@ -7,20 +7,20 @@ public interface ISagaTransactionBuilder
 
 public class SagaModelBuilder
 {
-    private readonly List<SagaTransactionModel> transactions = new();
+    private readonly List<SagaTransactionModel> _transactions = new();
 
     public SagaModelBuilder AddTransaction(Action<ISagaTransactionBuilder> builderAction)
     {
         var transactionBuilder = new SagaTransactionBuilder();
         builderAction(transactionBuilder);
-        transactions.Add(transactionBuilder.Build());
+        _transactions.Add(transactionBuilder.Build());
         return this;
     }
 
     public SagaModel Build()
         => new()
         {
-            Transactions = transactions.ToList(),
+            Transactions = _transactions.ToList(),
         };
 
     private class SagaTransactionBuilder : ISagaTransactionBuilder

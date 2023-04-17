@@ -64,7 +64,7 @@ class RabbitMQSagaHost  : IRabbitMQSagaHost
                 _channel.QueueBind(
                     queue.Name,
                     exchange,
-                    string.Empty,
+                    queue.Name,
                     null);
             }
         }
@@ -89,12 +89,16 @@ class RabbitMQSagaHost  : IRabbitMQSagaHost
         _sagaOrchestrator.Subscribe(sagaSubscriber);
     }
 
-    private void OnShutdownHandler(object? sender, ShutdownEventArgs e)
+    private void OnShutdownHandler(
+        object? sender,
+        ShutdownEventArgs e)
     {
         _logger.LogError("A shutdown occured: {ReplyText}, code: {ReplyCode}", e.ReplyText, e.ReplyCode);
     }
 
-    private void OnExceptionHandler(object? sender, CallbackExceptionEventArgs e)
+    private void OnExceptionHandler(
+        object? sender,
+        CallbackExceptionEventArgs e)
     {
         _logger.LogError(e.Exception, "An exception occured during handling the message: {Detail}", e.Detail);
     }

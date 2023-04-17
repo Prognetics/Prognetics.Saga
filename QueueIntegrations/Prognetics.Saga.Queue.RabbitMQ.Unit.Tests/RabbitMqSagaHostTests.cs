@@ -81,8 +81,14 @@ public class RabbitMQSagaHostTests
             false,
             Arg.Is<IDictionary<string, object>>(x => !x.Any()));
 
-		// Assert
-		_channel.Received(queuesCount).BasicConsume(
+        _channel.DidNotReceiveWithAnyArgs().QueueBind(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<IDictionary<string,object>>());
+
+        // Assert
+        _channel.Received(queuesCount).BasicConsume(
 			_basicConsumer,
 			Arg.Is<string>(x => consumers.Select(x => x.Queue).Contains(x)),
 			false,
@@ -93,4 +99,59 @@ public class RabbitMQSagaHostTests
 
 		_sagaOrchestrator.Received().Subscribe(_subscriber);
 	}
+
+    [Fact]
+    public void WhenExchageIsSet_ThenShouldDeclareQueuesCorrectly()
+    {
+        // Arrange
+        const int queuesCount = 10;
+        var queues = Enumerable.Range(0, queuesCount)
+            .Select(x => new RabbitMQQueue { Name = $"Queue{x}" })
+            .ToList();
+
+        const string exchange = "saga";
+
+        _sagaQueuesProvider.Queues.Returns(queues);
+        _sagaQueuesProvider.Exchange.Returns(exchange);
+
+        var consumers = Enumerable.Range(0, queuesCount)
+            .Select(x => new RabbitMQConsumer
+            {
+                Queue = queues[x].Name,
+                BasicConsumer = _basicConsumer,
+            })
+            .ToList();
+
+        _consumersFactory.Create(_channel, _sagaOrchestrator).Returns(consumers);
+        var source = new CancellationTokenSource();
+
+        // Act
+        _sut.Start();
+
+        _channel.Received(queuesCount).QueueDeclare(
+            Arg.Is<string>(x => queues.Any(q => q.Name == x)),
+            false,
+            false,
+            false,
+            Arg.Is<IDictionary<string, object>>(x => !x.Any()));
+
+        _channel.Received(queuesCount).QueueBind(
+            Arg.Is<string>(x => queues.Any(q => q.Name == x)),
+            Arg.Is(exchange),
+            Arg.Is<string>(x => queues.Any(q => q.Name == x)),
+            null);
+
+
+        // Assert
+        _channel.Received(queuesCount).BasicConsume(
+            _basicConsumer,
+            Arg.Is<string>(x => consumers.Select(x => x.Queue).Contains(x)),
+            false,
+            string.Empty,
+            false,
+            false,
+            null);
+
+        _sagaOrchestrator.Received().Subscribe(_subscriber);
+    }
 }
