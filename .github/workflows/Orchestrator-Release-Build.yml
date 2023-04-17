@@ -22,4 +22,4 @@ jobs:
       - name: Pack Orchestrator
         run: dotnet pack ${GITHUB_WORKSPACE}/Orchestrator/Prognetics.Saga.Orchestrator/Prognetics.Saga.Orchestrator.csproj -p:PackageVersion=${{ github.ref_name }} -c Release
       - name: Publish to nuget.org
-        run: dotnet nuget push ${GITHUB_WORKSPACE}/Orchestrator/Prognetics.Saga.Orchestrator/bin/Debug/*.nupkg -k ${{ secrets.NUGETAPIKEY }} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ${GITHUB_WORKSPACE}/Orchestrator/Prognetics.Saga.Orchestrator/bin/Release/*.nupkg -k ${{ secrets.NUGETAPIKEY }} -s https://api.nuget.org/v3/index.json

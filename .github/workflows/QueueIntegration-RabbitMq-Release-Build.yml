@@ -22,4 +22,4 @@ jobs:
       - name: Pack Orchestrator
         run: dotnet pack ${GITHUB_WORKSPACE}/QueueIntegrations/Prognetics.Saga.Queue.RabbitMQ/Prognetics.Saga.Queue.RabbitMQ.csproj -p:PackageVersion=${{ github.ref_name }} -c Release
       - name: Publish to nuget.org
-        run: dotnet nuget push ${GITHUB_WORKSPACE}/QueueIntegrations/Prognetics.Saga.Queue.RabbitMQ/bin/Debug/*.nupkg -k ${{ secrets.NUGETAPIKEY }} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ${GITHUB_WORKSPACE}/QueueIntegrations/Prognetics.Saga.Queue.RabbitMQ/bin/Release/*.nupkg -k ${{ secrets.NUGETAPIKEY }} -s https://api.nuget.org/v3/index.json
