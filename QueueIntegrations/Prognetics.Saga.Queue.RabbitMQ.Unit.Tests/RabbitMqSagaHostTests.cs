@@ -1,5 +1,4 @@
-﻿using Castle.Core.Logging;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Prognetics.Saga.Orchestrator;
 using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;

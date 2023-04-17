@@ -21,10 +21,10 @@ class RabbitMQSagaConsumerFactory : IRabbitMQSagaConsumerFactory
 
     public IBasicConsumer Create(
         IModel channel,
-        ISagaOrchestrator sagaQueue)
+        ISagaOrchestrator sagaOrchestrator)
         => _options.DispatchConsumersAsync
-        ? CreateAsyncConsumer(channel, sagaQueue)
-        : CreateBasicConsumer(channel, sagaQueue);
+        ? CreateAsyncConsumer(channel, sagaOrchestrator)
+        : CreateBasicConsumer(channel, sagaOrchestrator);
 
     public IBasicConsumer CreateAsyncConsumer(
         IModel channel,

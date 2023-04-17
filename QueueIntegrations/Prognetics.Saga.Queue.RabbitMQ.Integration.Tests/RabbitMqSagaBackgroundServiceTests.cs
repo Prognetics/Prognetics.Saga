@@ -15,7 +15,6 @@ public sealed class RabbitMQSagaBackgroundServiceTests :
     IDisposable
 {
     private readonly RabbitMQContainerFixture _fixture;
-    private readonly RabbitMQSagaHostBuilder _hostBuilder = new();
     private readonly SagaModelBuilder _sagaModelBuilder = new();
     private readonly RabbitMQSagaOptions _options = new();
     private readonly RetryPolicy<BasicGetResult?> _gettingRetryPolicy = Policy
@@ -30,7 +29,6 @@ public sealed class RabbitMQSagaBackgroundServiceTests :
     {
         _fixture = fixture;
         _options.ConnectionString = fixture.Container.GetConnectionString();
-        _hostBuilder.With(_options);
 
         _connection = new ConnectionFactory
         {
@@ -44,8 +42,10 @@ public sealed class RabbitMQSagaBackgroundServiceTests :
         _properties.ContentType = _options.ContentType;
     }
 
-    [Fact]
-    public async Task WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched()
+    [Theory]
+    [InlineData("")]
+    [InlineData("saga")]
+    public async Task WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched(string exchangeName)
     {
         const string queueSource = $"{nameof(WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched)}_{nameof(queueSource)}";
         const string queueTarget = $"{nameof(WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched)}_{nameof(queueTarget)}";
@@ -68,7 +68,10 @@ public sealed class RabbitMQSagaBackgroundServiceTests :
         _services.Configure<SagaModel>(x =>
             x.Transactions = sagaModel.Transactions);
         _services.Configure<RabbitMQSagaOptions>(x =>
-            x.ConnectionString = _fixture.Container.GetConnectionString());
+        {
+            x.ConnectionString = _fixture.Container.GetConnectionString();
+            x.Exchange = exchangeName;
+        });
         _services.AddHostedService<RabbitMQSagaBackgroundService>();
 
         var serviceProvider = _services.BuildServiceProvider();
@@ -153,8 +156,6 @@ public sealed class RabbitMQSagaBackgroundServiceTests :
             .AddTransaction(x => x
                 .AddStep(queueSource, queueTarget))
             .Build();
-
-        var sut = _hostBuilder.Build(sagaModel);
 
         var data = new TestData("Value");
         var messageTransactionId = Guid.NewGuid().ToString();
