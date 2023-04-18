@@ -9,6 +9,12 @@ public class SagaModelBuilder
 {
     private readonly List<SagaTransactionModel> _transactions = new();
 
+    public SagaModelBuilder From(SagaModel sagaModel)
+    {
+        _transactions.AddRange(sagaModel.Transactions.ToList());
+        return this;
+    }
+
     public SagaModelBuilder AddTransaction(Action<ISagaTransactionBuilder> builderAction)
     {
         var transactionBuilder = new SagaTransactionBuilder();

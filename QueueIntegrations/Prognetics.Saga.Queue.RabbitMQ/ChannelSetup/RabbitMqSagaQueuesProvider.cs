@@ -6,10 +6,10 @@ namespace Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 class RabbitMQSagaQueuesProvider : IRabbitMQSagaQueuesProvider
 {
     public RabbitMQSagaQueuesProvider(
-        SagaModel sagaModel,
+        ISagaModelProvider sagaModelProvider,
         RabbitMQSagaOptions options)
     {
-        Queues = sagaModel.Transactions
+        Queues = sagaModelProvider.Model.Transactions
             .SelectMany(x => x.Steps)
             .Aggregate(
                 new List<RabbitMQQueue>(),

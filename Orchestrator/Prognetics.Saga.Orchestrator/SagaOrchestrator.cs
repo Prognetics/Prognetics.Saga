@@ -1,13 +1,13 @@
 ﻿namespace Prognetics.Saga.Orchestrator;
 
-class SagaOrchestrator : ISagaOrchestrator
+public class SagaOrchestrator : ISagaOrchestrator
 {
     private readonly IReadOnlyDictionary<string, string> _steps;
     private ISagaSubscriber? _sagaSubscriber;
 
-    public SagaOrchestrator(SagaModel model)
+    public SagaOrchestrator(ISagaModelProvider provider)
     {
-        _steps = model.Transactions
+        _steps = provider.Model.Transactions
             .SelectMany(x => x.Steps)
             .ToDictionary(
                 x => x.From,

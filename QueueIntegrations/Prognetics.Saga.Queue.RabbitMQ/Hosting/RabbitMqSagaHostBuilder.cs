@@ -9,40 +9,40 @@ using Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
 
-public class RabbitMQSagaHostBuilder : IRabbitMQSagaHostBuilder
+public class RabbitMQSagaHostBuilder
 {
-    private RabbitMQSagaOptions _options = new();
-    private ILogger<IRabbitMQSagaHost>? _logger;
+    private ILogger<IRabbitMQSagaHost> _logger = NullLogger<IRabbitMQSagaHost>.Instance;
+    private ISagaModelProvider _modelProvider = EmptySagaModelProvider.Instance;
 
-    public RabbitMQSagaHostBuilder With(RabbitMQSagaOptions options)
+    public RabbitMQSagaHostBuilder SetModelProvider(ISagaModelProvider modelProvider)
     {
-        _options = options;
+        _modelProvider = modelProvider;
         return this;
     }
 
-    public RabbitMQSagaHostBuilder With(ILogger<IRabbitMQSagaHost> logger)
+    public RabbitMQSagaHostBuilder SetLogger(ILogger<IRabbitMQSagaHost> logger)
     {
         _logger = logger;
         return this;
     }
 
-    public IRabbitMQSagaHost Build(SagaModel sagaModel)
+    public ISagaHost Build(RabbitMQSagaOptions? options = default)
     {
-        var sagaOrchestrator = SagaOrchestratorBuilder.Build(sagaModel);
-        var serializer = _options.ContentType == "application/json"
+        options ??= RabbitMQSagaOptions.Default;
+
+        var serializer = options.ContentType == "application/json"
             ? new RabbitMQSagaJsonSerializer()
-            : throw new NotSupportedException($"Provided content type not supported: {_options.ContentType}");
+            : throw new NotSupportedException($"Provided content type not supported: {options.ContentType}");
 
         return new RabbitMQSagaHost(
-            new RabbitMQConnectionFactory(_options),
-            new RabbitMQSagaQueuesProvider(sagaModel, _options),
-            sagaOrchestrator,
+            new RabbitMQConnectionFactory(options),
+            new RabbitMQSagaQueuesProvider(_modelProvider, options),
             new RabbitMQSagaConsumersFactory(
-                sagaModel,
+                _modelProvider,
                 new RabbitMQSagaConsumerFactory(
-                    _options,
+                    options,
                     serializer)),
-            new RabbitMQSagaSubscriberFactory(serializer, _options),
-            _logger ?? NullLogger<IRabbitMQSagaHost>.Instance);
+            new RabbitMQSagaSubscriberFactory(serializer, options),
+            _logger);
     }
 }

@@ -25,7 +25,6 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
     {
         _fixture = fixture;
         _options.ConnectionString = fixture.Container.GetConnectionString();
-        _hostBuilder.With(_options);
 
         _connection = new ConnectionFactory
         {
@@ -53,7 +52,15 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
                 .AddStep(queueSource, queueTarget))
             .Build();
 
-        var sut = _hostBuilder.Build(sagaModel);
+        var modelProvider = new SagaModelProviderBuilder()
+            .With(new DelegateSagaModelSource(() => sagaModel))
+            .Build();
+
+        var orchestrator = new SagaOrchestrator(modelProvider);
+
+        var sut = _hostBuilder
+            .SetModelProvider(modelProvider)
+            .Build(_options);
 
         var data = new TestData("Value");
         var messageTransactionId = Guid.NewGuid().ToString();
@@ -66,7 +73,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
             JsonSerializer.Serialize(inputMessage));
 
         // Act
-        sut.Start();
+        sut.Start(orchestrator);
 
         _channel.BasicPublish(
             exchangeName,
@@ -96,7 +103,15 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
                 .AddStep(queueSource, queueTarget))
             .Build();
 
-        var sut = _hostBuilder.Build(sagaModel);
+        var modelProvider = new SagaModelProviderBuilder()
+            .With(new DelegateSagaModelSource(() => sagaModel))
+            .Build();
+
+        var orchestrator = new SagaOrchestrator(modelProvider);
+
+        var sut = _hostBuilder
+            .SetModelProvider(modelProvider)
+            .Build(_options);
 
         var data = new TestData("Value");
         var messageTransactionId = Guid.NewGuid().ToString();
@@ -108,7 +123,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
         var messageBytes = Encoding.UTF8.GetBytes(inputMessage.ToString());
         
         // Act
-        sut.Start();
+        sut.Start(orchestrator);
         _channel.BasicPublish(
             string.Empty,
             queueSource,
@@ -133,7 +148,15 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
                 .AddStep(queueSource, queueTarget))
             .Build();
 
-        var sut = _hostBuilder.Build(sagaModel);
+        var modelProvider = new SagaModelProviderBuilder()
+            .With(new DelegateSagaModelSource(() => sagaModel))
+            .Build();
+
+        var orchestrator = new SagaOrchestrator(modelProvider);
+
+        var sut = _hostBuilder
+            .SetModelProvider(modelProvider)
+            .Build(_options);
 
         var data = new TestData("Value");
         var messageTransactionId = Guid.NewGuid().ToString();
@@ -146,7 +169,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
             JsonSerializer.Serialize(inputMessage));
 
         // Act
-        sut.Start();
+        sut.Start(orchestrator);
         _channel.BasicPublish(
             string.Empty,
             "NotKnownMessageName",
@@ -167,7 +190,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
         _options.ContentType = "Unknown";
 
         // Act
-        var building = () => { _hostBuilder.Build(new SagaModel()); };
+        var building = () => { _hostBuilder.Build(_options); };
 
         // Assert
         Assert.Throws<NotSupportedException>(building);
@@ -178,10 +201,11 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
     {
         // Arrange
         _options.ConnectionString = "amqp://user:pass@host:10000/vhost";
-        var sut = _hostBuilder.Build(new SagaModel());
+
+        var sut = _hostBuilder.Build(_options);
 
         // Act
-        var starting = sut.Start;
+        var starting = () => sut.Start(new SagaOrchestrator(EmptySagaModelProvider.Instance));
 
         // Assert
         Assert.ThrowsAny<Exception>(starting);

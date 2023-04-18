@@ -8,10 +8,9 @@ using RabbitMQ.Client.Events;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
 
-class RabbitMQSagaHost  : IRabbitMQSagaHost
+class RabbitMQSagaHost : ISagaHost
 {
     private readonly IRabbitMQConnectionFactory _rabbitMqConnectionFactory;
-    private readonly ISagaOrchestrator _sagaOrchestrator;
     private readonly IRabbitMQSagaQueuesProvider _queuesProvider;
     private readonly IRabbitMQSagaConsumersFactory _rabbitMqSagaConsumersFactory;
     private readonly IRabbitMQSagaSubscriberFactory _sagaSubscriberFactory;
@@ -22,7 +21,6 @@ class RabbitMQSagaHost  : IRabbitMQSagaHost
     public RabbitMQSagaHost(
         IRabbitMQConnectionFactory rabbitMqConnectionFactory,
         IRabbitMQSagaQueuesProvider queuesProvider,
-        ISagaOrchestrator sagaOrchestrator,
         IRabbitMQSagaConsumersFactory rabbitMqSagaConsumersFactory,
         IRabbitMQSagaSubscriberFactory sagaSubscriberFactory,
         ILogger<IRabbitMQSagaHost> logger)
@@ -31,11 +29,12 @@ class RabbitMQSagaHost  : IRabbitMQSagaHost
         _rabbitMqSagaConsumersFactory = rabbitMqSagaConsumersFactory;
         _sagaSubscriberFactory = sagaSubscriberFactory;
         _logger = logger;
-        _sagaOrchestrator = sagaOrchestrator;
         _rabbitMqConnectionFactory = rabbitMqConnectionFactory;
     }
 
-    public void Start()
+    public Task Start(
+       ISagaOrchestrator orchestrator,
+       CancellationToken cancellationToken = default)
     {
         _connection = _rabbitMqConnectionFactory.Create();
         _connection.CallbackException += OnExceptionHandler;
@@ -71,7 +70,7 @@ class RabbitMQSagaHost  : IRabbitMQSagaHost
 
         var consumers = _rabbitMqSagaConsumersFactory.Create(
             _channel,
-            _sagaOrchestrator);
+            orchestrator);
 
         foreach (var consumer in consumers)
         {
@@ -86,7 +85,8 @@ class RabbitMQSagaHost  : IRabbitMQSagaHost
         }
 
         var sagaSubscriber = _sagaSubscriberFactory.Create(_channel);
-        _sagaOrchestrator.Subscribe(sagaSubscriber);
+        orchestrator.Subscribe(sagaSubscriber);
+        return Task.CompletedTask;
     }
 
     private void OnShutdownHandler(

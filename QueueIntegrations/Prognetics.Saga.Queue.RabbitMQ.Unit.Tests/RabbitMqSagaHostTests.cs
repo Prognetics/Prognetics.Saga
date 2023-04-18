@@ -42,7 +42,6 @@ public class RabbitMQSagaHostTests
         _sut = new RabbitMQSagaHost(
             _connectionFactory,
             _sagaQueuesProvider,
-            _sagaOrchestrator,
             _consumersFactory,
             _subscriberFactory,
             _logger);
@@ -71,7 +70,7 @@ public class RabbitMQSagaHostTests
 		var source = new CancellationTokenSource();
 
 		// Act
-		_sut.Start();
+		_sut.Start(_sagaOrchestrator);
 
         _channel.Received(queuesCount).QueueDeclare(
             Arg.Is<string>(x => queues.Any(q => q.Name == x)),
@@ -125,7 +124,7 @@ public class RabbitMQSagaHostTests
         var source = new CancellationTokenSource();
 
         // Act
-        _sut.Start();
+        _sut.Start(_sagaOrchestrator);
 
         _channel.Received(queuesCount).QueueDeclare(
             Arg.Is<string>(x => queues.Any(q => q.Name == x)),

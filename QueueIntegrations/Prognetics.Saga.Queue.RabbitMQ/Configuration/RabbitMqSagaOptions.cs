@@ -6,4 +6,6 @@ public class RabbitMQSagaOptions
     public string ContentType { get; set; } = "application/json";
     public string Exchange { get; set; } = string.Empty;
     public bool DispatchConsumersAsync { get; set; } = true;
+
+    public static RabbitMQSagaOptions Default { get; } = new();
 }
