@@ -2,5 +2,4 @@
 
 public record OutputMessage(
     string TransactionId,
-    string Name,
-    string Payload);
+    object Payload);

@@ -1,7 +1,6 @@
 ﻿namespace Prognetics.Saga.Orchestrator;
 
 public record InputMessage(
-    string TransactionId,
-    string Name,
+    string? TransactionId,
     object Payload,
-    object Compensation);
+    object? Compensation);
