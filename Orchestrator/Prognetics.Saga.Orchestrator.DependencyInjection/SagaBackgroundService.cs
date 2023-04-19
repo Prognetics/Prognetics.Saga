@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 
 namespace Prognetics.Saga.Orchestrator.DependencyInjection;
-internal class SagaBackgroundService : BackgroundService
+public class SagaBackgroundService : BackgroundService
 {
     private readonly IReadOnlyList<ISagaHost> _sagaHosts;
     private readonly ISagaOrchestrator _sagaOrchestrator;

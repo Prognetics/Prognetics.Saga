@@ -3,14 +3,14 @@ using RabbitMQ.Client;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Consuming;
 
-class RabbitMQSagaConsumersFactory : IRabbitMQSagaConsumersFactory
+public class RabbitMQConsumersFactory : IRabbitMQConsumersFactory
 {
     private readonly ISagaModelProvider _modelProvider;
-    private readonly IRabbitMQSagaConsumerFactory _rabbitMqSagaConsumerFactory;
+    private readonly IRabbitMQConsumerFactory _rabbitMqSagaConsumerFactory;
 
-    public RabbitMQSagaConsumersFactory(
+    public RabbitMQConsumersFactory(
         ISagaModelProvider modelProvider,
-        IRabbitMQSagaConsumerFactory rabbitMqSagaConsumerFactory)
+        IRabbitMQConsumerFactory rabbitMqSagaConsumerFactory)
     {
         _modelProvider = modelProvider;
         _rabbitMqSagaConsumerFactory = rabbitMqSagaConsumerFactory;

@@ -5,7 +5,7 @@ using RabbitMQ.Client;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 
-class RabbitMQSagaSubscriberFactory : IRabbitMQSagaSubscriberFactory
+public class RabbitMQSagaSubscriberFactory : IRabbitMQSagaSubscriberFactory
 {
     private readonly IRabbitMQSagaSerializer _serializer;
     private readonly RabbitMQSagaOptions _options;

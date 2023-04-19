@@ -8,11 +8,11 @@ using RabbitMQ.Client.Events;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
 
-class RabbitMQSagaHost : ISagaHost
+public class RabbitMQSagaHost : ISagaHost
 {
     private readonly IRabbitMQConnectionFactory _rabbitMqConnectionFactory;
-    private readonly IRabbitMQSagaQueuesProvider _queuesProvider;
-    private readonly IRabbitMQSagaConsumersFactory _rabbitMqSagaConsumersFactory;
+    private readonly IRabbitMQQueuesProvider _queuesProvider;
+    private readonly IRabbitMQConsumersFactory _rabbitMqSagaConsumersFactory;
     private readonly IRabbitMQSagaSubscriberFactory _sagaSubscriberFactory;
     private readonly ILogger<IRabbitMQSagaHost> _logger;
     private IConnection? _connection;
@@ -20,8 +20,8 @@ class RabbitMQSagaHost : ISagaHost
 
     public RabbitMQSagaHost(
         IRabbitMQConnectionFactory rabbitMqConnectionFactory,
-        IRabbitMQSagaQueuesProvider queuesProvider,
-        IRabbitMQSagaConsumersFactory rabbitMqSagaConsumersFactory,
+        IRabbitMQQueuesProvider queuesProvider,
+        IRabbitMQConsumersFactory rabbitMqSagaConsumersFactory,
         IRabbitMQSagaSubscriberFactory sagaSubscriberFactory,
         ILogger<IRabbitMQSagaHost> logger)
     {

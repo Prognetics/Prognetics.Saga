@@ -7,7 +7,7 @@ public static partial class ProgneticsSagaServiceCollectionExtensions
         this IServiceCollection serviceCollection,
         Action<IProgenticsSagaConfiguration> configure)
     {
-        var configuration = new ProgenticsSagaConfiguration();
+        var configuration = new ProgenticsSagaConfiguration(serviceCollection);
         configure(configuration);
 
         foreach (var host in configuration.Hosts)

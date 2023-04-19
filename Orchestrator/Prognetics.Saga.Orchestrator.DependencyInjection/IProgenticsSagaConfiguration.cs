@@ -1,4 +1,6 @@
-﻿namespace Prognetics.Saga.Orchestrator.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace Prognetics.Saga.Orchestrator.DependencyInjection;
 
 public interface IProgenticsSagaConfiguration
 {
@@ -6,5 +8,7 @@ public interface IProgenticsSagaConfiguration
         where THost : ISagaHost;
     IProgenticsSagaConfiguration UseModelSource<TModelSource>()
         where TModelSource : ISagaModelSource;
+
+    IServiceCollection Services { get; }
 }
 

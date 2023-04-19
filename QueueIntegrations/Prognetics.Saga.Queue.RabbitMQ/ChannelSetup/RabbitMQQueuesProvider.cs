@@ -3,9 +3,9 @@ using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 
-class RabbitMQSagaQueuesProvider : IRabbitMQSagaQueuesProvider
+public class RabbitMQQueuesProvider : IRabbitMQQueuesProvider
 {
-    public RabbitMQSagaQueuesProvider(
+    public RabbitMQQueuesProvider(
         ISagaModelProvider sagaModelProvider,
         RabbitMQSagaOptions options)
     {

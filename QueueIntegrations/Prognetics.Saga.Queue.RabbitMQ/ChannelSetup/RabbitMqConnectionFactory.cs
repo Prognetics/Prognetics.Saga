@@ -3,7 +3,7 @@ using RabbitMQ.Client;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 
-class RabbitMQConnectionFactory : IRabbitMQConnectionFactory
+public class RabbitMQConnectionFactory : IRabbitMQConnectionFactory
 {
     private readonly RabbitMQSagaOptions _options;
 

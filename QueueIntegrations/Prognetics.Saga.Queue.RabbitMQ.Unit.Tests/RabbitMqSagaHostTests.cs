@@ -13,9 +13,9 @@ public class RabbitMQSagaHostTests
     private readonly IConnection _connection;
     private readonly IModel _channel;
     private readonly IRabbitMQConnectionFactory _connectionFactory;
-    private readonly IRabbitMQSagaQueuesProvider _sagaQueuesProvider;
+    private readonly IRabbitMQQueuesProvider _sagaQueuesProvider;
     private readonly ISagaOrchestrator _sagaOrchestrator;
-    private readonly IRabbitMQSagaConsumersFactory _consumersFactory;
+    private readonly IRabbitMQConsumersFactory _consumersFactory;
     private readonly ISagaSubscriber _subscriber;
     private readonly IBasicConsumer _basicConsumer;
     private readonly IRabbitMQSagaSubscriberFactory _subscriberFactory;
@@ -27,9 +27,9 @@ public class RabbitMQSagaHostTests
         _channel = Substitute.For<IModel>();
         _connection = Substitute.For<IConnection>();
         _connectionFactory = Substitute.For<IRabbitMQConnectionFactory>();
-        _sagaQueuesProvider = Substitute.For<IRabbitMQSagaQueuesProvider>();
+        _sagaQueuesProvider = Substitute.For<IRabbitMQQueuesProvider>();
         _sagaOrchestrator = Substitute.For<ISagaOrchestrator>();
-        _consumersFactory = Substitute.For<IRabbitMQSagaConsumersFactory>();
+        _consumersFactory = Substitute.For<IRabbitMQConsumersFactory>();
         _subscriber = Substitute.For<ISagaSubscriber>();
         _basicConsumer = Substitute.For<IBasicConsumer>();
         _subscriberFactory = Substitute.For<IRabbitMQSagaSubscriberFactory>();

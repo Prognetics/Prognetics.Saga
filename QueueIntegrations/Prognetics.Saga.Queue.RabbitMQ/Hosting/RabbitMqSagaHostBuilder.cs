@@ -36,12 +36,12 @@ public class RabbitMQSagaHostBuilder
 
         return new RabbitMQSagaHost(
             new RabbitMQConnectionFactory(options),
-            new RabbitMQSagaQueuesProvider(_modelProvider, options),
-            new RabbitMQSagaConsumersFactory(
+            new RabbitMQQueuesProvider(_modelProvider, options),
+            new RabbitMQConsumersFactory(
                 _modelProvider,
-                new RabbitMQSagaConsumerFactory(
-                    options,
-                    serializer)),
+                options.DispatchConsumersAsync 
+                    ? new RabbitMQAsyncConsumerFactory(serializer)
+                    : new RabbitMQConsumerFactory(serializer)),
             new RabbitMQSagaSubscriberFactory(serializer, options),
             _logger);
     }
