@@ -1,9 +1,6 @@
 ﻿namespace Prognetics.Saga.Orchestrator;
 
-public interface ISagaModelSource
-{
-    SagaModel Get();
-}
+public delegate SagaModel SagaModelSource();
 
 public interface ISagaModelProvider
 {
@@ -22,22 +19,17 @@ public class EmptySagaModelProvider : ISagaModelProvider
 
 public class CompositeSagaModelProvider : ISagaModelProvider
 {
-    private readonly Lazy<SagaModel> _model;
-
-    public CompositeSagaModelProvider(IEnumerable<ISagaModelSource> sources)
+    public CompositeSagaModelProvider(IEnumerable<SagaModelSource> sources)
     {
-        _model = new Lazy<SagaModel>(() =>
+        var builder = new SagaModelBuilder();
+
+        foreach (var source in sources)
         {
-            var builder = new SagaModelBuilder();
+            builder.From(source());
+        }
 
-            foreach (var source in sources)
-            {
-                builder.From(source.Get());
-            }
-
-            return builder.Build();
-        });
+        Model = builder.Build();
     }
 
-    public SagaModel Model => _model.Value;
+    public SagaModel Model { get; }
 }

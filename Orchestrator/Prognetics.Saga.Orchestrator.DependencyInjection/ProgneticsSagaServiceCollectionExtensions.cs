@@ -10,20 +10,28 @@ public static partial class ProgneticsSagaServiceCollectionExtensions
         var configuration = new ProgenticsSagaConfiguration(serviceCollection);
         configure(configuration);
 
-        foreach (var host in configuration.Hosts)
-        {
-            serviceCollection.AddTransient(typeof(ISagaHost), host);
-        }
-
-        foreach (var source in configuration.ModelSources)
-        {
-            serviceCollection.AddSingleton(typeof(ISagaModelSource), source);
-        }
-
         serviceCollection.AddSingleton<ISagaModelProvider, CompositeSagaModelProvider>();
         serviceCollection.AddSingleton<ISagaOrchestrator, SagaOrchestrator>();
 
         serviceCollection.AddHostedService<SagaBackgroundService>();
         return serviceCollection;
+    }
+
+    public static IProgenticsSagaConfiguration ConfigureModel(
+        this IProgenticsSagaConfiguration serviceCollection,
+        Action<SagaModelBuilder> configure)
+        => ConfigureModel(serviceCollection, () =>
+        {
+            var builder = new SagaModelBuilder();
+             configure(builder);
+            return builder.Build();
+        });
+
+    public static IProgenticsSagaConfiguration ConfigureModel(
+        this IProgenticsSagaConfiguration configuration,
+        SagaModelSource factory)
+    {
+        configuration.Services.AddSingleton(factory);
+        return configuration;
     }
 }

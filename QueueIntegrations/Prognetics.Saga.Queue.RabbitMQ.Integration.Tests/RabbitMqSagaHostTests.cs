@@ -19,14 +19,13 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
     private readonly RetryPolicy<BasicGetResult?> _gettingRetryPolicy = Policy
         .HandleResult<BasicGetResult?>(x => x == null)
         .WaitAndRetry(10, _ => TimeSpan.FromMilliseconds(100));
+    private readonly IConnection _connection;
     private readonly IModel _channel;
     private readonly IBasicProperties _properties;
-    private readonly IConnection _connection;
 
     private readonly string _queueSource;
     private readonly string _queueTarget;
     private const string _exchange = "saga";
-    private readonly SagaModel _sagaModel;
     private readonly IServiceCollection _serviceCollection;
     private readonly IServiceProvider _serviceProvider;
     private readonly SagaBackgroundService _sut;
@@ -34,36 +33,23 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
     public RabbitMQSagaHostTests(RabbitMQContainerFixture fixture)
     {
         _fixture = fixture;
-        _options.ConnectionString = fixture.Container.GetConnectionString();
-
-        _connection = new ConnectionFactory
-        {
-            Uri = new Uri(_options.ConnectionString),
-            DispatchConsumersAsync = _options.DispatchConsumersAsync
-        }.CreateConnection();
-
+        _connection = _fixture.Connection;
         _channel = _connection.CreateModel();
         _properties = _channel.CreateBasicProperties();
         _properties.ContentType = _options.ContentType;
+        _options.ConnectionString = fixture.Container.GetConnectionString();
+        _options.Exchange = _exchange;
 
         _queueSource = Guid.NewGuid().ToString();
         _queueTarget = Guid.NewGuid().ToString();
 
-        _sagaModel = new SagaModelBuilder()
-            .AddTransaction(x => x
-                .AddStep(_queueSource, _queueTarget))
-            .Build();
-
         _serviceCollection = new ServiceCollection()
             .AddLogging()
-            .AddSingleton<Func<SagaModel>>(() => _sagaModel)
             .AddProgneticsSaga(config => config
-                .UseModelSource<DelegateSagaModelSource>()
-                .UseRabbitMQ(x =>
-                {
-                    x.ConnectionString = fixture.Container.GetConnectionString();
-                    x.Exchange = _exchange;
-                }));
+                .ConfigureModel(builder => builder
+                    .AddTransaction(t => t
+                        .AddStep(_queueSource, _queueTarget)))
+                .UseRabbitMQ(_options));
 
         _serviceProvider = _serviceCollection.BuildServiceProvider();
 
@@ -179,19 +165,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
 
     public void Dispose()
     {
-        _channel.Dispose();
         _connection.Dispose();
-    }
-
-    class DelegateSagaModelSource : ISagaModelSource
-    {
-        private readonly Func<SagaModel> _sagaModelFactory;
-
-        public DelegateSagaModelSource(Func<SagaModel> sagaModelFactory)
-        {
-            _sagaModelFactory = sagaModelFactory;
-        }
-
-        public SagaModel Get() => _sagaModelFactory();
+        _channel.Dispose();
     }
 }

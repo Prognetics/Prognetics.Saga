@@ -5,17 +5,23 @@ public interface ISagaTransactionBuilder
     ISagaTransactionBuilder AddStep(string from, string to);
 }
 
-public class SagaModelBuilder
+public interface ISagaModelBuilder
+{
+    ISagaModelBuilder From(SagaModel sagaModel);
+    ISagaModelBuilder AddTransaction(Action<ISagaTransactionBuilder> builderAction);
+}
+
+public class SagaModelBuilder : ISagaModelBuilder
 {
     private readonly List<SagaTransactionModel> _transactions = new();
 
-    public SagaModelBuilder From(SagaModel sagaModel)
+    public ISagaModelBuilder From(SagaModel sagaModel)
     {
         _transactions.AddRange(sagaModel.Transactions.ToList());
         return this;
     }
 
-    public SagaModelBuilder AddTransaction(Action<ISagaTransactionBuilder> builderAction)
+    public ISagaModelBuilder AddTransaction(Action<ISagaTransactionBuilder> builderAction)
     {
         var transactionBuilder = new SagaTransactionBuilder();
         builderAction(transactionBuilder);
