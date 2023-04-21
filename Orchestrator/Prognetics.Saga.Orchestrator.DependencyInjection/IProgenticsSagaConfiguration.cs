@@ -6,4 +6,3 @@ public interface IProgenticsSagaConfiguration
 {
     IServiceCollection Services { get; }
 }
-

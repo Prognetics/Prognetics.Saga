@@ -1,15 +1,5 @@
-﻿namespace Prognetics.Saga.Orchestrator;
+﻿namespace Prognetics.Saga.Orchestrator.SagaModel;
 
-public interface ISagaTransactionBuilder
-{
-    ISagaTransactionBuilder AddStep(string from, string to);
-}
-
-public interface ISagaModelBuilder
-{
-    ISagaModelBuilder From(SagaModel sagaModel);
-    ISagaModelBuilder AddTransaction(Action<ISagaTransactionBuilder> builderAction);
-}
 
 public class SagaModelBuilder : ISagaModelBuilder
 {

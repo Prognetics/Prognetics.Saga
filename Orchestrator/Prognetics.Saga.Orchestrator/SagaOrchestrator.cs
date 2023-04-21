@@ -1,30 +1,48 @@
-﻿namespace Prognetics.Saga.Orchestrator;
+﻿using Prognetics.Saga.Orchestrator.DTO;
+using Prognetics.Saga.Orchestrator.SagaModel;
+
+namespace Prognetics.Saga.Orchestrator;
 
 public class SagaOrchestrator : ISagaOrchestrator
 {
-    private readonly IReadOnlyDictionary<string, string> _steps;
+    private IReadOnlyDictionary<string, string>? _steps = null;
     private readonly List<ISagaSubscriber> _sagaSubscribers = new();
+    private readonly ISagaModelProvider _provider;
 
     public SagaOrchestrator(ISagaModelProvider provider)
     {
-        _steps = provider.Model.Transactions
-            .SelectMany(x => x.Steps)
-            .ToDictionary(
-                x => x.From,
-                x => x.To);
+        _provider = provider;
     }
 
-    public Task Push(string queueName, InputMessage inputMessage)
-        => _steps.TryGetValue(queueName, out var nextStep)
-            ? Task.WhenAll(_sagaSubscribers.Select(s => s.OnMessage(
+    public async Task Push(string queueName, InputMessage inputMessage)
+    {
+        _steps ??= await GetSteps();
+
+        if (!_steps.TryGetValue(queueName, out var nextStep))
+        {
+            throw new ArgumentException("Queue name not defined", nameof(queueName));
+        }
+
+        var outputMessage = new OutputMessage(
+            inputMessage.TransactionId ?? Guid.NewGuid().ToString(),
+            inputMessage.Payload);
+
+        await Parallel.ForEachAsync(
+            _sagaSubscribers,
+            (s, _) => new(s.OnMessage(
                 nextStep,
-                new OutputMessage(
-                    inputMessage.TransactionId ?? Guid.NewGuid().ToString(),
-                    inputMessage.Payload))))
-            : throw new ArgumentException("Queue name not defined", nameof(queueName));
+                outputMessage)));
+    }
 
     public void Subscribe(ISagaSubscriber sagaSubscriber)
     {
         _sagaSubscribers.Add(sagaSubscriber);
     }
+
+    private async Task<IReadOnlyDictionary<string, string>> GetSteps()
+        => (await _provider.GetModel()).Transactions
+            .SelectMany(x => x.Steps)
+            .ToDictionary(
+                x => x.From,
+                x => x.To);
 }

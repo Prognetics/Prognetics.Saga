@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Prognetics.Saga.Orchestrator.SagaModel;
 
 namespace Prognetics.Saga.Orchestrator.DependencyInjection;
 public static partial class ProgneticsSagaServiceCollectionExtensions
@@ -17,19 +18,19 @@ public static partial class ProgneticsSagaServiceCollectionExtensions
         return serviceCollection;
     }
 
-    public static IProgenticsSagaConfiguration ConfigureModel(
+    public static IProgenticsSagaConfiguration AddModelSource(
         this IProgenticsSagaConfiguration serviceCollection,
         Action<SagaModelBuilder> configure)
-        => ConfigureModel(serviceCollection, () =>
+        => AddModelSource(serviceCollection, new DelegateSagaModelSource(() =>
         {
             var builder = new SagaModelBuilder();
              configure(builder);
             return builder.Build();
-        });
+        }));
 
-    public static IProgenticsSagaConfiguration ConfigureModel(
+    public static IProgenticsSagaConfiguration AddModelSource(
         this IProgenticsSagaConfiguration configuration,
-        SagaModelSource factory)
+        ISagaModelSource factory)
     {
         configuration.Services.AddSingleton(factory);
         return configuration;
