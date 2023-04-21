@@ -1,31 +1,35 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Prognetics.Saga.Orchestrator.DependencyInjection;
 public class SagaBackgroundService : BackgroundService
 {
-    private readonly IReadOnlyList<ISagaHost> _sagaHosts;
-    private readonly ISagaOrchestrator _sagaOrchestrator;
+    private readonly IServiceProvider _serviceProvider;
+    private IServiceScope? _scope;
+    private ISagaHost? _host;
 
-    public SagaBackgroundService(
-        ISagaOrchestrator sagaOrchestrator,
-        IEnumerable<ISagaHost> sagaHosts)
-    {
-        _sagaHosts = sagaHosts.ToList();
-        _sagaOrchestrator = sagaOrchestrator;
-    }
+    public SagaBackgroundService(IServiceProvider serviceProvider)
+        => _serviceProvider = serviceProvider;
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
-        => Task.WhenAll(
-            _sagaHosts.Select(x => x
-                .Start(_sagaOrchestrator, stoppingToken)));
+    {
+        if (_scope != null)
+        {
+            throw new InvalidOperationException($"{nameof(SagaBackgroundService)} is running");
+        }
+
+        _scope = _serviceProvider.CreateScope();
+        _host = _serviceProvider.GetRequiredService<ISagaHost>();
+        _host.Start();
+        return Task.CompletedTask;
+    }
 
     public override void Dispose()
     {
-        foreach (var host in _sagaHosts)
-        {
-            host.Dispose();
-        }
-
+        _host?.Dispose();
+        _host = null;
+        _scope?.Dispose();
+        _scope = null;
         base.Dispose();
     }
 }

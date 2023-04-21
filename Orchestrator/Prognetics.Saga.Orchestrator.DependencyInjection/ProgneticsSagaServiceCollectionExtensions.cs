@@ -11,28 +11,33 @@ public static partial class ProgneticsSagaServiceCollectionExtensions
         var configuration = new ProgenticsSagaConfiguration(serviceCollection);
         configure(configuration);
 
-        serviceCollection.AddSingleton<ISagaModelProvider, CompositeSagaModelProvider>();
-        serviceCollection.AddSingleton<ISagaOrchestrator, SagaOrchestrator>();
+        serviceCollection.AddScoped<ISagaModelProvider>(x =>
+        {
+            var sources = x.GetRequiredService<IEnumerable<ISagaModelSource>>();
+            return sources.Any()
+                ? new CompositeSagaModelProvider(sources)
+                : EmptySagaModelProvider.Instance;
+        });
+        serviceCollection.AddScoped<ISagaOrchestrator, SagaOrchestrator>();
+        serviceCollection.AddScoped<ISagaHost, SagaHost>();
 
         serviceCollection.AddHostedService<SagaBackgroundService>();
         return serviceCollection;
     }
 
-    public static IProgenticsSagaConfiguration AddModelSource(
-        this IProgenticsSagaConfiguration serviceCollection,
-        Action<ISagaModelBuilder> configure)
-        => AddModelSource(serviceCollection, new DelegateSagaModelSource(() =>
-        {
-            var builder = new SagaModelBuilder();
-             configure(builder);
-            return builder.Build();
-        }));
-
-    public static IProgenticsSagaConfiguration AddModelSource(
-        this IProgenticsSagaConfiguration configuration,
-        ISagaModelSource factory)
+    public static IProgenticsSagaConfiguration AddModelSource<TSagaModelSource>(
+        this IProgenticsSagaConfiguration configuration)
+        where TSagaModelSource : class, ISagaModelSource
     {
-        configuration.Services.AddSingleton(factory);
+        configuration.Services.AddScoped<ISagaModelSource>();
+        return configuration;
+    }
+
+    public static IProgenticsSagaConfiguration AddSagaClient<TSagaClient>(
+        this IProgenticsSagaConfiguration configuration)
+        where TSagaClient : class, ISagaClient
+    {
+        configuration.Services.AddScoped<ISagaClient, TSagaClient>();
         return configuration;
     }
 }
