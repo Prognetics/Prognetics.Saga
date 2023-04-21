@@ -2,7 +2,7 @@
 
 public interface ISagaHost : IDisposable
 {
-    public void Start();
+    public Task Start(CancellationToken cancellationToken = default);
 }
 
 public class SagaHost : ISagaHost
@@ -18,12 +18,18 @@ public class SagaHost : ISagaHost
         _orchestrator = orchestrator;
     }
 
-    public void Start()
-        => _clients.ForEach(c =>
+    public async Task Start(CancellationToken cancellationToken)
+    {
+        _clients.ForEach(c =>
         {
             c.UseInput(_orchestrator);
             _orchestrator.Subscribe(c.Subscriber);
         });
+
+        await Task.WhenAll(
+            _clients.Select(c =>
+                c.Start(cancellationToken)));
+    }
 
     public void Dispose()
     {
