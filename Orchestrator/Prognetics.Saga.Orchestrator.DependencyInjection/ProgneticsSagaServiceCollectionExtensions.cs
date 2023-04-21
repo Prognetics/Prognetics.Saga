@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Prognetics.Saga.Orchestrator.SagaModel;
+using Prognetics.Saga.Orchestrator.Model;
 
 namespace Prognetics.Saga.Orchestrator.DependencyInjection;
 public static partial class ProgneticsSagaServiceCollectionExtensions
@@ -20,7 +20,7 @@ public static partial class ProgneticsSagaServiceCollectionExtensions
 
     public static IProgenticsSagaConfiguration AddModelSource(
         this IProgenticsSagaConfiguration serviceCollection,
-        Action<SagaModelBuilder> configure)
+        Action<ISagaModelBuilder> configure)
         => AddModelSource(serviceCollection, new DelegateSagaModelSource(() =>
         {
             var builder = new SagaModelBuilder();

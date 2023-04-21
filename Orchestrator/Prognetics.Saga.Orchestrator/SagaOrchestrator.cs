@@ -1,5 +1,5 @@
 ﻿using Prognetics.Saga.Orchestrator.DTO;
-using Prognetics.Saga.Orchestrator.SagaModel;
+using Prognetics.Saga.Orchestrator.Model;
 
 namespace Prognetics.Saga.Orchestrator;
 

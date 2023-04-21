@@ -1,4 +1,4 @@
-﻿namespace Prognetics.Saga.Orchestrator.SagaModel;
+﻿namespace Prognetics.Saga.Orchestrator.Model;
 
 public interface ISagaModelSource
 {
@@ -12,6 +12,16 @@ public class DelegateSagaModelSource : ISagaModelSource
     public DelegateSagaModelSource(Func<SagaModel> factory)
     {
         _factory = factory;
+    }
+
+    public DelegateSagaModelSource(Action<SagaModelBuilder> configure)
+    {
+        _factory = () =>
+        {
+            var builder = new SagaModelBuilder();
+            configure(builder);
+            return builder.Build();
+        };
     }
 
     public Task<SagaModel> GetSagaModel(CancellationToken cancellation = default)

@@ -1,8 +1,8 @@
-﻿namespace Prognetics.Saga.Orchestrator.SagaModel;
+﻿namespace Prognetics.Saga.Orchestrator.Model;
 
 public class SagaModel
 {
-    public IReadOnlyList<SagaTransactionModel> Transactions { get; set; } = new List<SagaTransactionModel>();
+    public IReadOnlyList<SagaTransactionModel> Transactions { get; init; } = new List<SagaTransactionModel>();
 }
 
 public class SagaTransactionModel

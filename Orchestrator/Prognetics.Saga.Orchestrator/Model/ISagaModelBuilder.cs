@@ -1,4 +1,4 @@
-﻿namespace Prognetics.Saga.Orchestrator.SagaModel;
+﻿namespace Prognetics.Saga.Orchestrator.Model;
 
 public interface ISagaModelBuilder
 {
