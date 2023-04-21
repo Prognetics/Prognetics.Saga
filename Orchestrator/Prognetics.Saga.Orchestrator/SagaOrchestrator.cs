@@ -1,12 +1,13 @@
 ﻿using Prognetics.Saga.Orchestrator.DTO;
 using Prognetics.Saga.Orchestrator.Model;
+using System.Collections.Concurrent;
 
 namespace Prognetics.Saga.Orchestrator;
 
 public class SagaOrchestrator : ISagaOrchestrator
 {
     private IReadOnlyDictionary<string, string>? _steps = null;
-    private readonly List<ISagaSubscriber> _sagaSubscribers = new();
+    private readonly ConcurrentBag<ISagaSubscriber> _sagaSubscribers = new();
     private readonly ISagaModelProvider _provider;
 
     public SagaOrchestrator(ISagaModelProvider provider)
@@ -45,4 +46,9 @@ public class SagaOrchestrator : ISagaOrchestrator
             .ToDictionary(
                 x => x.From,
                 x => x.To);
+
+    public void Dispose()
+    {
+        _sagaSubscribers.Clear();
+    }
 }

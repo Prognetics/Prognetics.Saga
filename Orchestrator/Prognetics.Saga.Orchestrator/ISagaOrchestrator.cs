@@ -2,8 +2,18 @@
 
 namespace Prognetics.Saga.Orchestrator;
 
-public interface ISagaOrchestrator
+public interface ISagaOrchestrator :
+    ISagaOutput,
+    ISagaInput,
+    IDisposable
+{ }
+
+public interface ISagaOutput
+{
+    void Subscribe(ISagaSubscriber sagaSubscriber);
+}
+
+public interface ISagaInput
 {
     Task Push(string queueName, InputMessage inputMessage);
-    void Subscribe(ISagaSubscriber sagaSubscriber);
 }
