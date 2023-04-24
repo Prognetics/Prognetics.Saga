@@ -8,32 +8,34 @@ public interface ISagaHost : IDisposable
 public class SagaHost : ISagaHost
 {
     private readonly List<ISagaClient> _clients;
-    private readonly ISagaOrchestrator _orchestrator;
+    private readonly ISagaOrchestratorFactory _orchestratorFactory;
+    private ISagaOrchestrator? _orchestrator;
 
     public SagaHost(
         IEnumerable<ISagaClient> clients,
-        ISagaOrchestrator orchestrator)
+        ISagaOrchestratorFactory orchestratorFactory)
     {
         _clients = clients.ToList();
-        _orchestrator = orchestrator;
+        _orchestratorFactory = orchestratorFactory;
     }
 
     public async Task Start(CancellationToken cancellationToken)
     {
-        _clients.ForEach(c =>
-        {
-            c.UseInput(_orchestrator);
-            _orchestrator.Subscribe(c.Subscriber);
-        });
+        if (_orchestrator != null) {
+            throw new InvalidOperationException("Host is already running");
+        }
+
+        _orchestrator = await _orchestratorFactory.Create(cancellationToken);
 
         await Task.WhenAll(
             _clients.Select(c =>
-                c.Start(cancellationToken)));
+                c.Start(_orchestrator, cancellationToken)));
     }
 
     public void Dispose()
     {
+        _clients.ForEach(c => c.Dispose());
         _clients.Clear();
-        _orchestrator.Dispose();
+        _orchestrator?.Dispose();
     }
 }
