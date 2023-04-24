@@ -4,6 +4,28 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Copyright>Prognetics Sp. z o.o.</Copyright>
+    <PackageProjectUrl>https://github.com/Prognetics/Prognetics.Saga</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Prognetics/Prognetics.Saga</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>saga; microservices; distributed systems; distributed transactions; prognetics;</PackageTags>
+    <AssemblyVersion>$(AssemblyVersion)</AssemblyVersion>
+    <Company>Prognetics Sp. z o.o.</Company>
+    <Title>Prognetics.Saga.Parser.Json</Title>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>
