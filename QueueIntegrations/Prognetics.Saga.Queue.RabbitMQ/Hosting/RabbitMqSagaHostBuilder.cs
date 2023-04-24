@@ -12,13 +12,6 @@ namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
 public class RabbitMQSagaHostBuilder
 {
     private ILogger<IRabbitMQSagaHost> _logger = NullLogger<IRabbitMQSagaHost>.Instance;
-    private ISagaModelProvider _modelProvider = EmptySagaModelProvider.Instance;
-
-    public RabbitMQSagaHostBuilder SetModelProvider(ISagaModelProvider modelProvider)
-    {
-        _modelProvider = modelProvider;
-        return this;
-    }
 
     public RabbitMQSagaHostBuilder SetLogger(ILogger<IRabbitMQSagaHost> logger)
     {
@@ -26,7 +19,7 @@ public class RabbitMQSagaHostBuilder
         return this;
     }
 
-    public ISagaHost Build(RabbitMQSagaOptions? options = default)
+    public ISagaClient Build(RabbitMQSagaOptions? options = default)
     {
         options ??= RabbitMQSagaOptions.Default;
 
@@ -34,15 +27,15 @@ public class RabbitMQSagaHostBuilder
             ? new RabbitMQSagaJsonSerializer()
             : throw new NotSupportedException($"Provided content type not supported: {options.ContentType}");
 
-        return new RabbitMQSagaHost(
+        return new RabbitMQSagaClient(
             new RabbitMQConnectionFactory(options),
-            new RabbitMQQueuesProvider(_modelProvider, options),
+            new RabbitMQQueuesProvider(),
             new RabbitMQConsumersFactory(
-                _modelProvider,
                 options.DispatchConsumersAsync 
                     ? new RabbitMQAsyncConsumerFactory(serializer)
                     : new RabbitMQConsumerFactory(serializer)),
             new RabbitMQSagaSubscriberFactory(serializer, options),
+            options,
             _logger);
     }
 }

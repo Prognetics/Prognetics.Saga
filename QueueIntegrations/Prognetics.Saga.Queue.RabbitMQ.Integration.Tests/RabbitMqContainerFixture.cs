@@ -1,13 +1,10 @@
 ﻿using RabbitMQ.Client;
-using System.ComponentModel;
-using System.Data.Common;
 using Testcontainers.RabbitMq;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
 
 public class RabbitMQContainerFixture : IAsyncLifetime
 {
-    private IConnection _connection = null!;
     public RabbitMqContainer Container { get; }
 
     public RabbitMQContainerFixture()

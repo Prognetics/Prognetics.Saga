@@ -5,14 +5,10 @@ namespace Prognetics.Saga.Queue.RabbitMQ.Consuming;
 
 public class RabbitMQConsumersFactory : IRabbitMQConsumersFactory
 {
-    private readonly ISagaModelProvider _modelProvider;
     private readonly IRabbitMQConsumerFactory _rabbitMqSagaConsumerFactory;
 
-    public RabbitMQConsumersFactory(
-        ISagaModelProvider modelProvider,
-        IRabbitMQConsumerFactory rabbitMqSagaConsumerFactory)
+    public RabbitMQConsumersFactory(IRabbitMQConsumerFactory rabbitMqSagaConsumerFactory)
     {
-        _modelProvider = modelProvider;
         _rabbitMqSagaConsumerFactory = rabbitMqSagaConsumerFactory;
     }
 
@@ -24,7 +20,7 @@ public class RabbitMQConsumersFactory : IRabbitMQConsumersFactory
             channel,
             sagaOrchestrator);
 
-        return _modelProvider.Model.Transactions
+        return sagaOrchestrator.Model.Transactions
             .SelectMany(x => x.Steps)
             .Select(x => new RabbitMQConsumer
             {

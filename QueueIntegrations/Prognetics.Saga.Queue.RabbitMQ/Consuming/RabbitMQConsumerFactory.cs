@@ -1,4 +1,5 @@
 ﻿using Prognetics.Saga.Orchestrator;
+using Prognetics.Saga.Orchestrator.DTO;
 using Prognetics.Saga.Queue.RabbitMQ.Serialization;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;

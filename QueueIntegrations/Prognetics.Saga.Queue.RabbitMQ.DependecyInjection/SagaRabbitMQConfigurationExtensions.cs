@@ -48,7 +48,7 @@ public static class SagaRabbitMQConfigurationExtensions
                 ? new RabbitMQAsyncConsumerFactory(serviceProvider.GetRequiredService<IRabbitMQSagaSerializer>())
                 : new RabbitMQConsumerFactory(serviceProvider.GetRequiredService<IRabbitMQSagaSerializer>()));
         configuration.Services.AddSingleton<IRabbitMQSagaSubscriberFactory, RabbitMQSagaSubscriberFactory>();
-        configuration.Services.AddSingleton<ISagaHost, RabbitMQSagaHost>();
+        configuration.AddSagaClient<RabbitMQSagaClient>();
         return configuration;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Prognetics.Saga.Orchestrator;
 using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
+using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 using Prognetics.Saga.Queue.RabbitMQ.Consuming;
 using Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 using RabbitMQ.Client;
@@ -8,26 +9,29 @@ using RabbitMQ.Client.Events;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
 
-public class RabbitMQSagaHost : ISagaHost
+public class RabbitMQSagaClient : ISagaClient
 {
     private readonly IRabbitMQConnectionFactory _rabbitMqConnectionFactory;
     private readonly IRabbitMQQueuesProvider _queuesProvider;
     private readonly IRabbitMQConsumersFactory _rabbitMqSagaConsumersFactory;
     private readonly IRabbitMQSagaSubscriberFactory _sagaSubscriberFactory;
+    private readonly RabbitMQSagaOptions _options;
     private readonly ILogger<IRabbitMQSagaHost> _logger;
     private IConnection? _connection;
     private IModel? _channel;
 
-    public RabbitMQSagaHost(
+    public RabbitMQSagaClient(
         IRabbitMQConnectionFactory rabbitMqConnectionFactory,
         IRabbitMQQueuesProvider queuesProvider,
         IRabbitMQConsumersFactory rabbitMqSagaConsumersFactory,
         IRabbitMQSagaSubscriberFactory sagaSubscriberFactory,
+        RabbitMQSagaOptions options,
         ILogger<IRabbitMQSagaHost> logger)
     {
         _queuesProvider = queuesProvider;
         _rabbitMqSagaConsumersFactory = rabbitMqSagaConsumersFactory;
         _sagaSubscriberFactory = sagaSubscriberFactory;
+        _options = options;
         _logger = logger;
         _rabbitMqConnectionFactory = rabbitMqConnectionFactory;
     }
@@ -42,14 +46,14 @@ public class RabbitMQSagaHost : ISagaHost
         _channel = _connection.CreateModel();
         _channel.CallbackException += OnExceptionHandler;
 
-        var exchange = _queuesProvider.Exchange;
+        var exchange = _options.Exchange;
 
         if (!string.IsNullOrEmpty(exchange))
         {
             _channel.ExchangeDeclare(exchange, ExchangeType.Direct);
         }
 
-        foreach (var queue in _queuesProvider.Queues)
+        foreach (var queue in _queuesProvider.GetQueues(orchestrator.Model))
         {
             _channel.QueueDeclare(
                 queue.Name,

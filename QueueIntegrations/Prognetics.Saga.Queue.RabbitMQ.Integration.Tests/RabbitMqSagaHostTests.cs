@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Retry;
-using Prognetics.Saga.Orchestrator;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 using RabbitMQ.Client;
 using System.Text;
@@ -9,6 +8,8 @@ using System.Text.Json;
 using Prognetics.Saga.Orchestrator.DependencyInjection;
 using Prognetics.Saga.Queue.RabbitMQ.DependecyInjection;
 using Microsoft.Extensions.Hosting;
+using Prognetics.Saga.Orchestrator.Model;
+using Prognetics.Saga.Orchestrator.DTO;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
 public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixture>, IDisposable
@@ -46,10 +47,10 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
         _serviceCollection = new ServiceCollection()
             .AddLogging()
             .AddProgneticsSaga(config => config
-                .ConfigureModel(builder => builder
-                    .AddTransaction(t => t
-                        .AddStep(_queueSource, _queueTarget)))
-                .UseRabbitMQ(_options));
+                .AddModelSource<DelegateSagaModelSource>()
+                .UseRabbitMQ(_options)
+                .Services.AddSingleton(new Action<SagaModelBuilder>(builder =>
+                    builder.AddTransaction(t => t.AddStep(_queueSource, _queueTarget)))));
 
         _serviceProvider = _serviceCollection.BuildServiceProvider();
 
