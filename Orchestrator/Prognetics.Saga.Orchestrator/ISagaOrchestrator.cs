@@ -1,19 +1,13 @@
 ﻿using Prognetics.Saga.Orchestrator.DTO;
+using Prognetics.Saga.Orchestrator.Model;
 
 namespace Prognetics.Saga.Orchestrator;
 
-public interface ISagaOrchestrator :
-    ISagaOutput,
-    ISagaInput,
-    IDisposable
-{ }
-
-public interface ISagaOutput
+public interface ISagaOrchestrator : IDisposable
 {
+    SagaModel Model { get; }
+
     void Subscribe(ISagaSubscriber sagaSubscriber);
-}
 
-public interface ISagaInput
-{
     Task Push(string queueName, InputMessage inputMessage);
 }

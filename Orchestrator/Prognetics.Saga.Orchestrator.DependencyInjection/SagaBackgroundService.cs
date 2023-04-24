@@ -20,7 +20,7 @@ public class SagaBackgroundService : BackgroundService
 
         _scope = _serviceProvider.CreateScope();
         _host = _serviceProvider.GetRequiredService<ISagaHost>();
-        _host.Start();
+        _host.Start(stoppingToken);
         return Task.CompletedTask;
     }
 

@@ -1,7 +1,7 @@
 ﻿using Prognetics.Saga.Orchestrator.Model;
 
 namespace Prognetics.Saga.Orchestrator.Unit.Tests;
-public class CompositeSagaModelProviderTests
+public class SagaOrchestratorFactoryTests
 {
     [Theory]
     [InlineData(new int[] { }, 0)]
@@ -27,9 +27,9 @@ public class CompositeSagaModelProviderTests
                             $"{fromPrefix}, source: {sourceNumber}, transaction: {ti}, step: {si}",
                             $"{toPrefix}, source: {sourceNumber}, transaction: {ti}, step: {si}"))))));
 
-        var sut = new CompositeSagaModelProvider(sources);
+        var sut = new SagaOrchestratorFactory(sources);
 
-        var model = await sut.GetModel();
+        var model = (await sut.Create(CancellationToken.None)).Model;
         
         Assert.NotNull(model);
 

@@ -11,14 +11,7 @@ public static partial class ProgneticsSagaServiceCollectionExtensions
         var configuration = new ProgenticsSagaConfiguration(serviceCollection);
         configure(configuration);
 
-        serviceCollection.AddScoped<ISagaModelProvider>(x =>
-        {
-            var sources = x.GetRequiredService<IEnumerable<ISagaModelSource>>();
-            return sources.Any()
-                ? new CompositeSagaModelProvider(sources)
-                : EmptySagaModelProvider.Instance;
-        });
-        serviceCollection.AddScoped<ISagaOrchestrator, SagaOrchestrator>();
+        serviceCollection.AddScoped<ISagaOrchestratorFactory, SagaOrchestratorFactory>();
         serviceCollection.AddScoped<ISagaHost, SagaHost>();
 
         serviceCollection.AddHostedService<SagaBackgroundService>();
@@ -29,7 +22,7 @@ public static partial class ProgneticsSagaServiceCollectionExtensions
         this IProgenticsSagaConfiguration configuration)
         where TSagaModelSource : class, ISagaModelSource
     {
-        configuration.Services.AddScoped<ISagaModelSource>();
+        configuration.Services.AddScoped<ISagaModelSource, TSagaModelSource>();
         return configuration;
     }
 

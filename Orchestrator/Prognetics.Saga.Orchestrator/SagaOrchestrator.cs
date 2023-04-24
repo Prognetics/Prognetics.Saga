@@ -6,18 +6,20 @@ namespace Prognetics.Saga.Orchestrator;
 
 public class SagaOrchestrator : ISagaOrchestrator
 {
-    private IReadOnlyDictionary<string, string>? _steps = null;
+    private readonly IReadOnlyDictionary<string, string> _steps;
     private readonly ConcurrentBag<ISagaSubscriber> _sagaSubscribers = new();
-    private readonly ISagaModelProvider _provider;
+    private readonly SagaModel _sagaModel;
 
-    public SagaOrchestrator(ISagaModelProvider provider)
+    public SagaModel Model => _sagaModel;
+
+    public SagaOrchestrator(SagaModel sagaModel)
     {
-        _provider = provider;
+        _sagaModel = sagaModel;
+        _steps = GetSteps();
     }
 
     public async Task Push(string queueName, InputMessage inputMessage)
     {
-        _steps ??= await GetSteps();
 
         if (!_steps.TryGetValue(queueName, out var nextStep))
         {
@@ -40,8 +42,8 @@ public class SagaOrchestrator : ISagaOrchestrator
         _sagaSubscribers.Add(sagaSubscriber);
     }
 
-    private async Task<IReadOnlyDictionary<string, string>> GetSteps()
-        => (await _provider.GetModel()).Transactions
+    private IReadOnlyDictionary<string, string> GetSteps()
+        => _sagaModel.Transactions
             .SelectMany(x => x.Steps)
             .ToDictionary(
                 x => x.From,
