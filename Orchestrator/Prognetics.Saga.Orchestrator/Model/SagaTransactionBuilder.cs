@@ -17,6 +17,6 @@ class SagaTransactionBuilder : ISagaTransactionBuilder
     public SagaTransactionModel Build()
         => new()
         {
-            Steps = _steps.ToList()I
+            Steps = _steps.ToList(),
         };
 }
