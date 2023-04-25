@@ -12,6 +12,9 @@ using Prognetics.Saga.Orchestrator.Model;
 using Prognetics.Saga.Orchestrator.DTO;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
+/// <summary>
+/// This tests MAY fail because of poor connection between RabbitMQ container and clients.
+/// </summary>
 public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixture>, IDisposable
 {
     private readonly RabbitMQContainerFixture _fixture;

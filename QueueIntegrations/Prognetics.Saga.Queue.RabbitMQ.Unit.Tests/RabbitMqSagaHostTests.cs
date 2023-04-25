@@ -55,11 +55,11 @@ public class RabbitMQSagaHostTests
             _logger);
     }
 
-	[Fact]
-	public void WhenHostingIsCorrectlyConfigured_ThenShouldConfigureChannelCorrectly()
-	{
-		// Arrange
-		const int queuesCount = 10;
+    [Fact]
+    public void WhenHostingIsCorrectlyConfigured_ThenShouldConfigureChannelCorrectly()
+    {
+        // Arrange
+        const int queuesCount = 10;
         var queues = Enumerable.Range(0, queuesCount)
             .Select(x => new RabbitMQQueue { Name = $"Queue{x}" })
             .ToList();
