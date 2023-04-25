@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Prognetics.Saga.Orchestrator;
 using Prognetics.Saga.Orchestrator.DependencyInjection;
 using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
@@ -12,15 +11,15 @@ using Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 namespace Prognetics.Saga.Queue.RabbitMQ.DependecyInjection;
 public static class SagaRabbitMQConfigurationExtensions
 {
-    public static IProgenticsSagaConfiguration UseRabbitMQ(
-        this IProgenticsSagaConfiguration configuration,
+    public static ISagaConfiguration UseRabbitMQ(
+        this ISagaConfiguration configuration,
         string connectionString)
         => UseRabbitMQ(
             configuration,
             x => x.ConnectionString = connectionString);
 
-    public static IProgenticsSagaConfiguration UseRabbitMQ(
-        this IProgenticsSagaConfiguration configuration,
+    public static ISagaConfiguration UseRabbitMQ(
+        this ISagaConfiguration configuration,
         RabbitMQSagaOptions options)
         => UseRabbitMQ(
             configuration,
@@ -31,8 +30,8 @@ public static class SagaRabbitMQConfigurationExtensions
                 x.DispatchConsumersAsync = options.DispatchConsumersAsync;
             });
 
-    public static IProgenticsSagaConfiguration UseRabbitMQ(
-        this IProgenticsSagaConfiguration configuration,
+    public static ISagaConfiguration UseRabbitMQ(
+        this ISagaConfiguration configuration,
         Action<RabbitMQSagaOptions> configureOptions)
     {
         configuration.Services.Configure(configureOptions);
