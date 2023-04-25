@@ -1,10 +1,5 @@
 ﻿namespace Prognetics.Saga.Orchestrator.Model;
 
-public interface ISagaModelSource
-{
-    Task<SagaModel> GetSagaModel(CancellationToken cancellation = default);
-}
-
 public class DelegateSagaModelSource : ISagaModelSource
 {
     private readonly Func<SagaModel> _factory;

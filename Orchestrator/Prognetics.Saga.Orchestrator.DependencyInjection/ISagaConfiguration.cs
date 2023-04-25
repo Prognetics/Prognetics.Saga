@@ -2,7 +2,7 @@
 
 namespace Prognetics.Saga.Orchestrator.DependencyInjection;
 
-public interface IProgenticsSagaConfiguration
+public interface ISagaConfiguration
 {
     IServiceCollection Services { get; }
 }
