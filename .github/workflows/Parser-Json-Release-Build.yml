@@ -1,4 +1,4 @@
-name: Orchestrator Release Build
+name: Parser Json Release Build
 
 on:
   release:
@@ -20,6 +20,6 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity normal
       - name: Pack Orchestrator
-        run: dotnet pack ${GITHUB_WORKSPACE}/Orchestrator/Prognetics.Saga.Orchestrator/Prognetics.Saga.Orchestrator.csproj -p:PackageVersion=${{ github.ref_name }} -c Release
+        run: dotnet pack ${GITHUB_WORKSPACE}/Parsers/Prognetics.Saga.Parser.Json/Prognetics.Saga.Parser.Json.csproj -p:PackageVersion=${{ github.ref_name }} -c Release
       - name: Publish to nuget.org
-        run: dotnet nuget push ${GITHUB_WORKSPACE}/Orchestrator/Prognetics.Saga.Orchestrator/bin/Release/*.nupkg -k ${{ secrets.NUGETAPIKEY }} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ${GITHUB_WORKSPACE}/Parsers/Prognetics.Saga.Parser.Json/bin/Release/*.nupkg -k ${{ secrets.NUGETAPIKEY }} -s https://api.nuget.org/v3/index.json
