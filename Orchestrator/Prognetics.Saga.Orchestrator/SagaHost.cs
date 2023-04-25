@@ -1,10 +1,5 @@
 ﻿namespace Prognetics.Saga.Orchestrator;
 
-public interface ISagaHost : IDisposable
-{
-    public Task Start(CancellationToken cancellationToken = default);
-}
-
 public class SagaHost : ISagaHost
 {
     private readonly List<ISagaClient> _clients;
@@ -34,8 +29,15 @@ public class SagaHost : ISagaHost
 
     public void Dispose()
     {
-        _clients.ForEach(c => c.Dispose());
-        _clients.Clear();
-        _orchestrator?.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing) {
+            _clients.ForEach(c => c.Dispose());
+            _orchestrator?.Dispose();
+        }
     }
 }

@@ -2,13 +2,13 @@
 using Prognetics.Saga.Orchestrator.Model;
 
 namespace Prognetics.Saga.Orchestrator.DependencyInjection;
-public static partial class ProgneticsSagaServiceCollectionExtensions
+public static partial class SagaServiceCollectionExtensions
 {
-    public static IServiceCollection AddProgneticsSaga(
+    public static IServiceCollection AddSaga(
         this IServiceCollection serviceCollection,
-        Action<IProgenticsSagaConfiguration> configure)
+        Action<ISagaConfiguration> configure)
     {
-        var configuration = new ProgenticsSagaConfiguration(serviceCollection);
+        var configuration = new SagaConfiguration(serviceCollection);
         configure(configuration);
 
         serviceCollection.AddScoped<ISagaOrchestratorFactory, SagaOrchestratorFactory>();
@@ -18,16 +18,16 @@ public static partial class ProgneticsSagaServiceCollectionExtensions
         return serviceCollection;
     }
 
-    public static IProgenticsSagaConfiguration AddModelSource<TSagaModelSource>(
-        this IProgenticsSagaConfiguration configuration)
+    public static ISagaConfiguration AddModelSource<TSagaModelSource>(
+        this ISagaConfiguration configuration)
         where TSagaModelSource : class, ISagaModelSource
     {
         configuration.Services.AddScoped<ISagaModelSource, TSagaModelSource>();
         return configuration;
     }
 
-    public static IProgenticsSagaConfiguration AddSagaClient<TSagaClient>(
-        this IProgenticsSagaConfiguration configuration)
+    public static ISagaConfiguration AddSagaClient<TSagaClient>(
+        this ISagaConfiguration configuration)
         where TSagaClient : class, ISagaClient
     {
         configuration.Services.AddScoped<ISagaClient, TSagaClient>();
