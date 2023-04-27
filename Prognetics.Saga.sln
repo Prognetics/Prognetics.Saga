@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Queue.Rabbi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Orchestrator.DependencyInjection", "Orchestrator\Prognetics.Saga.Orchestrator.DependencyInjection\Prognetics.Saga.Orchestrator.DependencyInjection.csproj", "{8857D5EB-F0E4-42AB-80DC-4DA7310D38AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prognetics.Saga.Queue.RabbitMQ.DependecyInjection", "QueueIntegrations\Prognetics.Saga.Queue.RabbitMQ.DependecyInjection\Prognetics.Saga.Queue.RabbitMQ.DependecyInjection.csproj", "{7B579A9F-5F12-4C20-B68A-DCF301D065DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Queue.RabbitMQ.DependencyInjection", "QueueIntegrations\Prognetics.Saga.Queue.RabbitMQ.DependencyInjection\Prognetics.Saga.Queue.RabbitMQ.DependencyInjection.csproj", "{7B579A9F-5F12-4C20-B68A-DCF301D065DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,7 +87,6 @@ Global
 		{E6CAC4AF-1783-4E2E-BE11-0ABBE4D129E6} = {1C8734BE-A0B5-47B1-91E8-7FED1B34E1D8}
 		{3FA17D3B-9A49-407B-899A-568206D59EB6} = {663538F2-01D4-45C1-BD52-EC702496D50A}
 		{032E29A9-C88C-467A-9015-4AC96A9468E3} = {1C8734BE-A0B5-47B1-91E8-7FED1B34E1D8}
-		{8857D5EB-F0E4-42AB-80DC-4DA7310D38AB} = {663538F2-01D4-45C1-BD52-EC702496D50A}
 		{6363B7BE-F9B2-4B24-B127-854ECC72F8B7} = {96144EF9-54CF-4A85-92D6-376A1FD2063C}
 		{4CCD633A-0EC2-42F1-B25F-8923DC5CED10} = {96144EF9-54CF-4A85-92D6-376A1FD2063C}
 		{8857D5EB-F0E4-42AB-80DC-4DA7310D38AB} = {663538F2-01D4-45C1-BD52-EC702496D50A}
