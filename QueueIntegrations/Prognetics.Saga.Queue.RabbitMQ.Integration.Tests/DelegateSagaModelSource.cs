@@ -1,4 +1,4 @@
-﻿using Prognetics.Saga.Orchestrator.Model;
+﻿using Prognetics.Saga.Common.Model;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
 

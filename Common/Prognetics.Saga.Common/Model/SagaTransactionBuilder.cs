@@ -1,4 +1,4 @@
-﻿namespace Prognetics.Saga.Orchestrator.Model;
+﻿namespace Prognetics.Saga.Common.Model;
 
 class SagaTransactionBuilder : ISagaTransactionBuilder
 {

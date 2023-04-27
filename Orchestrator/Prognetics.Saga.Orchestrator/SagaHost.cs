@@ -1,4 +1,6 @@
-﻿namespace Prognetics.Saga.Orchestrator;
+﻿using Prognetics.Saga.Orchestrator.Contract;
+
+namespace Prognetics.Saga.Orchestrator;
 
 public class SagaHost : ISagaHost
 {

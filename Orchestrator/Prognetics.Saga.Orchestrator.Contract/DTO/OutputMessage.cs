@@ -1,4 +1,4 @@
-﻿namespace Prognetics.Saga.Orchestrator.DTO;
+﻿namespace Prognetics.Saga.Orchestrator.Contract.DTO;
 
 public record OutputMessage(
     string TransactionId,

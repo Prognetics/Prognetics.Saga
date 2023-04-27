@@ -1,4 +1,4 @@
-﻿using Prognetics.Saga.Orchestrator;
+﻿using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 using Prognetics.Saga.Queue.RabbitMQ.Serialization;
 using RabbitMQ.Client;

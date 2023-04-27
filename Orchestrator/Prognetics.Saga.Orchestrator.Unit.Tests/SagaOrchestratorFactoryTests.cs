@@ -1,6 +1,4 @@
-﻿using Prognetics.Saga.Orchestrator.Model;
-
-namespace Prognetics.Saga.Orchestrator.Unit.Tests;
+﻿namespace Prognetics.Saga.Orchestrator.Unit.Tests;
 public class SagaOrchestratorFactoryTests
 {
     [Theory]
