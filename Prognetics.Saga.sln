@@ -21,14 +21,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Parser.Json
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Queue.RabbitMQ.Unit.Tests", "QueueIntegrations\Prognetics.Saga.Queue.RabbitMQ.Unit.Tests\Prognetics.Saga.Queue.RabbitMQ.Unit.Tests.csproj", "{6363B7BE-F9B2-4B24-B127-854ECC72F8B7}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Builds", "Builds", "{2E4CD3C4-3D88-4422-A19C-CC256034B6BA}"
-	ProjectSection(SolutionItems) = preProject
-		.github\workflows\Orchestrator-Release-Build.yml = .github\workflows\Orchestrator-Release-Build.yml
-		.github\workflows\Parser-Json-Release-Build.yml = .github\workflows\Parser-Json-Release-Build.yml
-		.github\workflows\PR-Build.yml = .github\workflows\PR-Build.yml
-		.github\workflows\QueueIntegration-RabbitMq-Release-Build.yml = .github\workflows\QueueIntegration-RabbitMq-Release-Build.yml
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Queue.RabbitMQ.Integration.Tests", "QueueIntegrations\Prognetics.Saga.Queue.RabbitMQ.Integration.Tests\Prognetics.Saga.Queue.RabbitMQ.Integration.Tests.csproj", "{4CCD633A-0EC2-42F1-B25F-8923DC5CED10}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Orchestrator.DependencyInjection", "Orchestrator\Prognetics.Saga.Orchestrator.DependencyInjection\Prognetics.Saga.Orchestrator.DependencyInjection.csproj", "{8857D5EB-F0E4-42AB-80DC-4DA7310D38AB}"
