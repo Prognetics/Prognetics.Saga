@@ -1,5 +1,6 @@
-﻿using Prognetics.Saga.Orchestrator.DTO;
-using Prognetics.Saga.Orchestrator.Model;
+﻿using Prognetics.Saga.Common.Model;
+using Prognetics.Saga.Orchestrator.Contract;
+using Prognetics.Saga.Orchestrator.Contract.DTO;
 using System.Collections.Concurrent;
 
 namespace Prognetics.Saga.Orchestrator;

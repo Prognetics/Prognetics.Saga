@@ -1,4 +1,6 @@
-﻿namespace Prognetics.Saga.Orchestrator.Model;
+﻿using Prognetics.Saga.Common.Model;
+
+namespace Prognetics.Saga.Orchestrator.Unit.Tests;
 
 public class DelegateSagaModelSource : ISagaModelSource
 {

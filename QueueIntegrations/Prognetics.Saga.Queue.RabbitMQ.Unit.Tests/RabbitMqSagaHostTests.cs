@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
-using Prognetics.Saga.Orchestrator;
-using Prognetics.Saga.Orchestrator.Model;
+using Prognetics.Saga.Common.Model;
+using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 using Prognetics.Saga.Queue.RabbitMQ.Consuming;

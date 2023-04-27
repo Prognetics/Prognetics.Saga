@@ -1,7 +1,7 @@
-﻿using Prognetics.Saga.Orchestrator.DTO;
-using Prognetics.Saga.Orchestrator.Model;
+﻿using Prognetics.Saga.Common.Model;
+using Prognetics.Saga.Orchestrator.Contract.DTO;
 
-namespace Prognetics.Saga.Orchestrator;
+namespace Prognetics.Saga.Orchestrator.Contract;
 
 public interface ISagaOrchestrator : IDisposable
 {
