@@ -1,9 +1,4 @@
-﻿using Prognetics.Saga.Orchestrator;
-using System;
-using System.Text.Json;
-using System.Text;
-
-namespace Prognetics.Saga.Queue.RabbitMQ.Serialization;
+﻿namespace Prognetics.Saga.Queue.RabbitMQ.Serialization;
 
 public interface IRabbitMQSagaSerializer
 {

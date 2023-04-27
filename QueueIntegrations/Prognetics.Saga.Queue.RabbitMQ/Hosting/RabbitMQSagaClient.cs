@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Prognetics.Saga.Orchestrator;
 using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
