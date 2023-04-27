@@ -20,7 +20,6 @@ public class SagaOrchestrator : ISagaOrchestrator
 
     public async Task Push(string queueName, InputMessage inputMessage)
     {
-
         if (!_steps.TryGetValue(queueName, out var nextStep))
         {
             throw new ArgumentException("Queue name not defined", nameof(queueName));
