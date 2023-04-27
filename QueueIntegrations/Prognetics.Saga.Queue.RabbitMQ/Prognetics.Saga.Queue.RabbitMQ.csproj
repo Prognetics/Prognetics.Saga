@@ -35,10 +35,6 @@
     <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Orchestrator\Prognetics.Saga.Orchestrator\Prognetics.Saga.Orchestrator.csproj" />
-  </ItemGroup>
-
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
 			<_Parameter1>$(AssemblyName).Unit.Tests</_Parameter1>
@@ -46,5 +42,9 @@
 		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
 			<_Parameter1>$(AssemblyName).Integration.Tests</_Parameter1>
 		</AssemblyAttribute>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Orchestrator\Prognetics.Saga.Orchestrator.Contract\Prognetics.Saga.Orchestrator.Contract.csproj" />
 	</ItemGroup>
 </Project>
