@@ -8,7 +8,7 @@ using Prognetics.Saga.Queue.RabbitMQ.Hosting;
 using Prognetics.Saga.Queue.RabbitMQ.Serialization;
 using Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 
-namespace Prognetics.Saga.Queue.RabbitMQ.DependecyInjection;
+namespace Prognetics.Saga.Queue.RabbitMQ.DependencyInjection;
 public static class SagaRabbitMQConfigurationExtensions
 {
     public static ISagaConfiguration UseRabbitMQ(

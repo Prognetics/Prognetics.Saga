@@ -6,7 +6,7 @@ using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
 using Prognetics.Saga.Orchestrator.DependencyInjection;
-using Prognetics.Saga.Queue.RabbitMQ.DependecyInjection;
+using Prognetics.Saga.Queue.RabbitMQ.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Prognetics.Saga.Orchestrator.Model;
 using Prognetics.Saga.Orchestrator.DTO;

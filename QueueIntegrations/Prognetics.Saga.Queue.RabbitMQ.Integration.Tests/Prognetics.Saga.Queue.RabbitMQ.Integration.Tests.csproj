@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Prognetics.Saga.Queue.RabbitMQ.DependecyInjection\Prognetics.Saga.Queue.RabbitMQ.DependencyInjection.csproj" />
+    <ProjectReference Include="..\Prognetics.Saga.Queue.RabbitMQ.DependencyInjection\Prognetics.Saga.Queue.RabbitMQ.DependencyInjection.csproj" />
   </ItemGroup>
 
 </Project>
