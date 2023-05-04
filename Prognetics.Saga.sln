@@ -35,11 +35,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Builds", "Builds", "{2E4CD3
 		.github\workflows\QueueIntegration-RabbitMq-Release-Build.yml = .github\workflows\QueueIntegration-RabbitMq-Release-Build.yml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{6BA6C20A-6C50-45CB-B1FE-B0DF13A88617}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Orchestrator.Contract", "Orchestrator\Prognetics.Saga.Orchestrator.Contract\Prognetics.Saga.Orchestrator.Contract.csproj", "{005EF194-3040-458C-AD4D-2FC611910D2F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prognetics.Saga.Common", "Common\Prognetics.Saga.Common\Prognetics.Saga.Common.csproj", "{903A530B-64C0-4BF9-8E7D-F0C1CB4C12E3}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{803D5E6D-9FD3-4275-9134-92E0754E9E18}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prognetics.Saga.Orchestrator.Contract", "Orchestrator\Prognetics.Saga.Orchestrator.Contract\Prognetics.Saga.Orchestrator.Contract.csproj", "{005EF194-3040-458C-AD4D-2FC611910D2F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Core", "Core\Prognetics.Saga.Core\Prognetics.Saga.Core.csproj", "{9840662A-C534-47AD-9F4E-7819A463365E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prognetics.Saga.Parsers.Core", "Core\Prognetics.Saga.Parsers.Core\Prognetics.Saga.Parsers.Core.csproj", "{FEAACAF5-1834-4111-8550-AC23EFB51AA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,14 +85,18 @@ Global
 		{7B579A9F-5F12-4C20-B68A-DCF301D065DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B579A9F-5F12-4C20-B68A-DCF301D065DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B579A9F-5F12-4C20-B68A-DCF301D065DA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{903A530B-64C0-4BF9-8E7D-F0C1CB4C12E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{903A530B-64C0-4BF9-8E7D-F0C1CB4C12E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{903A530B-64C0-4BF9-8E7D-F0C1CB4C12E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{903A530B-64C0-4BF9-8E7D-F0C1CB4C12E3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{005EF194-3040-458C-AD4D-2FC611910D2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{005EF194-3040-458C-AD4D-2FC611910D2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{005EF194-3040-458C-AD4D-2FC611910D2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{005EF194-3040-458C-AD4D-2FC611910D2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9840662A-C534-47AD-9F4E-7819A463365E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9840662A-C534-47AD-9F4E-7819A463365E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9840662A-C534-47AD-9F4E-7819A463365E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9840662A-C534-47AD-9F4E-7819A463365E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEAACAF5-1834-4111-8550-AC23EFB51AA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEAACAF5-1834-4111-8550-AC23EFB51AA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEAACAF5-1834-4111-8550-AC23EFB51AA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEAACAF5-1834-4111-8550-AC23EFB51AA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -105,8 +111,9 @@ Global
 		{4CCD633A-0EC2-42F1-B25F-8923DC5CED10} = {96144EF9-54CF-4A85-92D6-376A1FD2063C}
 		{8857D5EB-F0E4-42AB-80DC-4DA7310D38AB} = {663538F2-01D4-45C1-BD52-EC702496D50A}
 		{7B579A9F-5F12-4C20-B68A-DCF301D065DA} = {96144EF9-54CF-4A85-92D6-376A1FD2063C}
-		{903A530B-64C0-4BF9-8E7D-F0C1CB4C12E3} = {6BA6C20A-6C50-45CB-B1FE-B0DF13A88617}
 		{005EF194-3040-458C-AD4D-2FC611910D2F} = {663538F2-01D4-45C1-BD52-EC702496D50A}
+		{9840662A-C534-47AD-9F4E-7819A463365E} = {803D5E6D-9FD3-4275-9134-92E0754E9E18}
+		{FEAACAF5-1834-4111-8550-AC23EFB51AA1} = {803D5E6D-9FD3-4275-9134-92E0754E9E18}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ED800AB2-E9FF-46A4-A3C1-34EA50109527}

@@ -1,4 +1,6 @@
-﻿namespace Prognetics.Saga.Common.Model;
+﻿using Prognetics.Saga.Core.Abstract;
+
+namespace Prognetics.Saga.Core.Model;
 
 class SagaTransactionBuilder : ISagaTransactionBuilder
 {

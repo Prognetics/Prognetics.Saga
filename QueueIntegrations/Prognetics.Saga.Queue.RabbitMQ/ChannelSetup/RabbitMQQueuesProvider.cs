@@ -1,4 +1,4 @@
-﻿using Prognetics.Saga.Common.Model;
+﻿using Prognetics.Saga.Core.Model;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 

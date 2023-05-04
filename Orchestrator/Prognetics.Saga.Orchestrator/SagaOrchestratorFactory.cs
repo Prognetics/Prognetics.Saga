@@ -1,4 +1,5 @@
-﻿using Prognetics.Saga.Common.Model;
+﻿using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract;
 
 namespace Prognetics.Saga.Orchestrator;
