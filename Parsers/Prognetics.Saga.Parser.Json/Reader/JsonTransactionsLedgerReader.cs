@@ -1,18 +1,38 @@
 ﻿using Prognetics.Saga.Parsers.Core.Abstract;
 using Prognetics.Saga.Parsers.Core.Model;
+using System.Net;
+using System.Reflection.PortableExecutable;
+using System.Text.Json;
 
 namespace Prognetics.Saga.Parser.Json.Reader
 {
     public class JsonTransactionsLedgerReader : ITransactionsLedgerReader
     {
-        public void Configure(ReaderConfiguration configuration)
+        private readonly ReaderConfiguration _configuration;
+
+        public JsonTransactionsLedgerReader(ReaderConfiguration configuration)
         {
-            throw new NotImplementedException();
+            if (configuration == null)
+            {
+                throw new NullReferenceException("Configuration for reader not set");
+            }
+
+            _configuration = configuration;            
         }
 
-        public List<Transaction> ReadTransactions()
+        public ConfigurationSource GetSource() => _configuration.Source;
+
+        public async Task<List<Transaction>> ReadFromFileAsync()
         {
-            throw new NotImplementedException();
+            using var stream = File.OpenRead(_configuration.Uri);
+            return await JsonSerializer.DeserializeAsync<List<Transaction>>(stream);
+        }
+
+        public async Task<List<Transaction>> ReadFromInternetAsync()
+        {
+            using var client = new HttpClient();
+            var fileStream = await client.GetStreamAsync(_configuration.Uri);
+            return await JsonSerializer.DeserializeAsync<List<Transaction>>(fileStream);
         }
     }
 }

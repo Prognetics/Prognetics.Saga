@@ -4,8 +4,10 @@ namespace Prognetics.Saga.Parsers.Core.Abstract
 {
     public interface ITransactionsLedgerReader
     {
-        void Configure(ReaderConfiguration configuration);
+        ConfigurationSource GetSource();
 
-        List<Transaction> ReadTransactions();
+        Task<List<Transaction>> ReadFromFileAsync();
+
+        Task<List<Transaction>> ReadFromInternetAsync();
     }
 }
