@@ -1,4 +1,5 @@
-﻿using Prognetics.Saga.Common.Model;
+﻿using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Core.Model;
 
 namespace Prognetics.Saga.Orchestrator.Unit.Tests;
 

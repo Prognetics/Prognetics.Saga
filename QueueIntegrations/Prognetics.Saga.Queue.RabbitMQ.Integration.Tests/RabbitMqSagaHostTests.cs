@@ -8,8 +8,8 @@ using System.Text.Json;
 using Prognetics.Saga.Orchestrator.DependencyInjection;
 using Prognetics.Saga.Queue.RabbitMQ.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Prognetics.Saga.Common.Model;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
+using Prognetics.Saga.Core.Abstract;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
 /// <summary>

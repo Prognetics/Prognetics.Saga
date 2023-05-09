@@ -1,4 +1,6 @@
-﻿namespace Prognetics.Saga.Common.Model;
+﻿using Prognetics.Saga.Core.Abstract;
+
+namespace Prognetics.Saga.Core.Model;
 
 public class SagaModelBuilder : ISagaModelBuilder
 {

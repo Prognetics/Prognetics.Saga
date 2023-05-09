@@ -28,4 +28,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Prognetics.Saga.Parsers.Core\Prognetics.Saga.Parsers.Core.csproj" />
+  </ItemGroup>
+
 </Project>
