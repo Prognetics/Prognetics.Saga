@@ -27,8 +27,9 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
     private readonly IModel _channel;
     private readonly IBasicProperties _properties;
 
-    private readonly string _queueSource;
-    private readonly string _queueTarget;
+    private readonly string _eventName;
+    private readonly string _completionEventName;
+    private readonly string _compensationEventName;
     private const string _exchange = "saga";
     private readonly IServiceCollection _serviceCollection;
     private readonly IServiceProvider _serviceProvider;
@@ -44,16 +45,17 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
         _options.ConnectionString = fixture.Container.GetConnectionString();
         _options.Exchange = _exchange;
 
-        _queueSource = Guid.NewGuid().ToString();
-        _queueTarget = Guid.NewGuid().ToString();
+        _eventName = Guid.NewGuid().ToString();
+        _completionEventName = Guid.NewGuid().ToString();
+        _compensationEventName = Guid.NewGuid().ToString();
 
         _serviceCollection = new ServiceCollection()
             .AddLogging()
             .AddSaga(config => config
                 .AddModelSource<DelegateSagaModelSource>()
                 .UseRabbitMQ(_options)
-                .Services.AddSingleton(new Action<ISagaModelBuilder>(builder =>
-                    builder.AddTransaction(t => t.AddStep(_queueSource, _queueTarget)))));
+                .Services.AddSingleton(new Action<IModelBuilder>(builder =>
+                    builder.AddTransaction(t => t.AddStep(_eventName, _completionEventName, _compensationEventName)))));
 
         _serviceProvider = _serviceCollection.BuildServiceProvider();
 
@@ -78,12 +80,12 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
 
         _channel.BasicPublish(
             _exchange,
-            _queueSource,
+            _eventName,
             _properties,
             messageBytes);
 
         var result = _gettingRetryPolicy.Execute(() =>
-            _channel.BasicGet(_queueTarget, true));
+            _channel.BasicGet(_completionEventName, true));
 
         // Assert
         Assert.NotNull(result);
@@ -110,12 +112,12 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
 
         _channel.BasicPublish(
             _exchange,
-            _queueSource,
+            _eventName,
             _properties,
             messageBytes);
 
         var result = _gettingRetryPolicy.Execute(() =>
-            _channel.BasicGet(_queueTarget, true));
+            _channel.BasicGet(_completionEventName, true));
         
         // Assert
         Assert.Null(result);
@@ -144,7 +146,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
             messageBytes);
 
         var result = _gettingRetryPolicy.Execute(() =>
-            _channel.BasicGet(_queueTarget, true));
+            _channel.BasicGet(_completionEventName, true));
 
         // Assert
         Assert.Null(result);

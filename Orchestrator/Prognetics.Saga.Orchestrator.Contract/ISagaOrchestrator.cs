@@ -5,7 +5,7 @@ namespace Prognetics.Saga.Orchestrator.Contract;
 
 public interface ISagaOrchestrator : IDisposable
 {
-    SagaModel Model { get; }
+    TransactionsLedger Model { get; }
 
     void Subscribe(ISagaSubscriber sagaSubscriber);
 

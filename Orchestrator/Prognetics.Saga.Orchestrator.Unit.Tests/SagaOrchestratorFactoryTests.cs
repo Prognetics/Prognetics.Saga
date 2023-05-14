@@ -13,8 +13,9 @@ public class SagaOrchestratorFactoryTests
         int [] transactionsCountPerSource,
         int stepsCountPerTransaction)
     {
-        const string fromPrefix = nameof(fromPrefix);
-        const string toPrefix = nameof(toPrefix);
+        const string eventNamePrefix = nameof(eventNamePrefix);
+        const string completionEventNamePrefix = nameof(completionEventNamePrefix);
+        const string compensationEventNamePrefix = nameof(compensationEventNamePrefix);
 
         var sources = transactionsCountPerSource.Select((transactionsCount, sourceNumber) =>
             new DelegateSagaModelSource(builder =>
@@ -22,8 +23,9 @@ public class SagaOrchestratorFactoryTests
                 builder.AddTransaction(transaction =>
                     Enumerable.Range(0, stepsCountPerTransaction).ToList().ForEach(si =>
                     transaction.AddStep(
-                            $"{fromPrefix}, source: {sourceNumber}, transaction: {ti}, step: {si}",
-                            $"{toPrefix}, source: {sourceNumber}, transaction: {ti}, step: {si}"))))));
+                            $"{eventNamePrefix}, source: {sourceNumber}, transaction: {ti}, step: {si}",
+                            $"{completionEventNamePrefix}, source: {sourceNumber}, transaction: {ti}, step: {si}",
+                            $"{compensationEventNamePrefix}, source: {sourceNumber}, transaction: {ti}, step: {si}"))))));
 
         var sut = new SagaOrchestratorFactory(sources);
 

@@ -3,18 +3,18 @@ using Prognetics.Saga.Core.Model;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
 
-internal class DelegateSagaModelSource : ISagaModelSource
+internal class DelegateSagaModelSource : IModelSource
 {
-    private readonly Action<ISagaModelBuilder> _configure;
+    private readonly Action<IModelBuilder> _configure;
 
-    public DelegateSagaModelSource(Action<ISagaModelBuilder> configure)
+    public DelegateSagaModelSource(Action<IModelBuilder> configure)
     {
         _configure = configure;
     }
 
-    public Task<SagaModel> GetSagaModel(CancellationToken cancellation = default)
+    public Task<TransactionsLedger> GetModel(CancellationToken cancellation = default)
     {
-        var builder = new SagaModelBuilder();
+        var builder = new ModelBuilder();
         _configure(builder);
         return Task.FromResult(builder.Build());
     }
