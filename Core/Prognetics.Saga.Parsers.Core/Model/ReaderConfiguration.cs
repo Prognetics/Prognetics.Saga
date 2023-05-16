@@ -2,7 +2,7 @@
 {
     public class ReaderConfiguration
     {
-        public ConfigurationSource Source { get; set; }
+        public string ParserType { get; set; }
 
         public string Uri { get; set; }
     }
