@@ -1,32 +1,42 @@
-﻿using Prognetics.Saga.Orchestrator.Contract;
+﻿using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Core.Model;
+using Prognetics.Saga.Orchestrator.Contract;
 
 namespace Prognetics.Saga.Orchestrator;
 
 public class SagaHost : ISagaHost
 {
-    private readonly List<ISagaClient> _clients;
-    private readonly ISagaOrchestratorFactory _orchestratorFactory;
-    private ISagaOrchestrator? _orchestrator;
+    private readonly IReadOnlyList<ISagaModelSource> _sources;
+    private readonly ISagaClient _client;
+    private IStartableSagaOrchestrator _orchestrator;
 
     public SagaHost(
-        IEnumerable<ISagaClient> clients,
-        ISagaOrchestratorFactory orchestratorFactory)
+        IEnumerable<ISagaModelSource> sources,
+        ISagaClient client,
+        IStartableSagaOrchestrator orchestrator)
     {
-        _clients = clients.ToList();
-        _orchestratorFactory = orchestratorFactory;
+        _sources = sources.ToList();
+        _client = client;
+        _orchestrator = orchestrator;
     }
 
     public async Task Start(CancellationToken cancellationToken)
     {
-        if (_orchestrator != null) {
-            throw new InvalidOperationException("Host is already running");
+        if (_orchestrator.IsStarted) {
+            throw new InvalidOperationException("Orchestrator has been already run");
         }
 
-        _orchestrator = await _orchestratorFactory.Create(cancellationToken);
+        var model = (await Task.WhenAll(_sources
+            .Select(s => s.GetSagaModel())))
+            .Aggregate(
+                new SagaModelBuilder(),
+                (builder, model) => builder.From(model))
+            .Build();
 
-        await Task.WhenAll(
-            _clients.Select(c =>
-                c.Start(_orchestrator, cancellationToken)));
+        await _client.Initialize();
+        var subscriber = await _client.GetSubscriber();
+        _orchestrator.Start(subscriber);
+        await _client.Consume(_orchestrator);
     }
 
     public void Dispose()
@@ -38,8 +48,7 @@ public class SagaHost : ISagaHost
     protected virtual void Dispose(bool disposing)
     {
         if (disposing) {
-            _clients.ForEach(c => c.Dispose());
-            _orchestrator?.Dispose();
+            _client.Dispose();
         }
     }
 }

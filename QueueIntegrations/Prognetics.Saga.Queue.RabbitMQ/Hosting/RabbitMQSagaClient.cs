@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
@@ -11,16 +13,19 @@ namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
 
 public class RabbitMQSagaClient : ISagaClient
 {
+    private readonly ITransactionLedgerProvider _transactionLedgerProvider;
     private readonly IRabbitMQConnectionFactory _rabbitMqConnectionFactory;
     private readonly IRabbitMQQueuesProvider _queuesProvider;
     private readonly IRabbitMQConsumersFactory _rabbitMqSagaConsumersFactory;
     private readonly IRabbitMQSagaSubscriberFactory _sagaSubscriberFactory;
     private readonly RabbitMQSagaOptions _options;
     private readonly ILogger<IRabbitMQSagaHost> _logger;
+    private SagaModel? _sagaModel;
     private IConnection? _connection;
     private IModel? _channel;
 
     public RabbitMQSagaClient(
+        ITransactionLedgerProvider transactionLedgerProvider,
         IRabbitMQConnectionFactory rabbitMqConnectionFactory,
         IRabbitMQQueuesProvider queuesProvider,
         IRabbitMQConsumersFactory rabbitMqSagaConsumersFactory,
@@ -28,6 +33,7 @@ public class RabbitMQSagaClient : ISagaClient
         RabbitMQSagaOptions options,
         ILogger<IRabbitMQSagaHost> logger)
     {
+        _transactionLedgerProvider = transactionLedgerProvider;
         _queuesProvider = queuesProvider;
         _rabbitMqSagaConsumersFactory = rabbitMqSagaConsumersFactory;
         _sagaSubscriberFactory = sagaSubscriberFactory;
@@ -36,10 +42,8 @@ public class RabbitMQSagaClient : ISagaClient
         _rabbitMqConnectionFactory = rabbitMqConnectionFactory;
     }
 
-    public Task Start(
-       ISagaOrchestrator orchestrator,
-       CancellationToken cancellationToken = default)
-    {
+    public async Task Initialize(){
+        _sagaModel = await _transactionLedgerProvider.Get();
         _connection = _rabbitMqConnectionFactory.Create();
         _connection.CallbackException += OnExceptionHandler;
         _connection.ConnectionShutdown += OnShutdownHandler;
@@ -53,7 +57,7 @@ public class RabbitMQSagaClient : ISagaClient
             _channel.ExchangeDeclare(exchange, ExchangeType.Direct);
         }
 
-        foreach (var queue in _queuesProvider.GetQueues(orchestrator.Model))
+        foreach (var queue in _queuesProvider.GetQueues(_sagaModel))
         {
             _channel.QueueDeclare(
                 queue.Name,
@@ -71,10 +75,27 @@ public class RabbitMQSagaClient : ISagaClient
                     null);
             }
         }
+    }
+
+    public Task<ISagaSubscriber> GetSubscriber(){
+        if (_channel is null)
+        {
+            throw new InvalidOperationException("Client has not been initialized");
+        }
+
+        return Task.FromResult(_sagaSubscriberFactory.Create(_channel));
+    }
+
+    public Task Consume(ISagaOrchestrator orchestrator){
+        if (_channel is null || _sagaModel is null)
+        {
+            throw new InvalidOperationException("Client has not been initialized");
+        }
 
         var consumers = _rabbitMqSagaConsumersFactory.Create(
             _channel,
-            orchestrator);
+            orchestrator,
+            _sagaModel);
 
         foreach (var consumer in consumers)
         {
@@ -88,8 +109,6 @@ public class RabbitMQSagaClient : ISagaClient
                 consumer.Arguments);
         }
 
-        var sagaSubscriber = _sagaSubscriberFactory.Create(_channel);
-        orchestrator.Subscribe(sagaSubscriber);
         return Task.CompletedTask;
     }
 

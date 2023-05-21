@@ -6,19 +6,25 @@ class SagaTransactionBuilder : ISagaTransactionBuilder
 {
     private readonly List<SagaTransactionStepModel> _steps = new();
 
-    public ISagaTransactionBuilder AddStep(string from, string to)
+    public ISagaTransactionBuilder AddStep(
+        string from,
+        string to,
+        string compensation)
     {
         _steps.Add(new SagaTransactionStepModel
         {
+            Order = _steps.Count(),
             From = from,
-            To = to
+            To = to,
+            Compensation = compensation
         });
         return this;
     }
 
-    public SagaTransactionModel Build()
+    public SagaTransactionModel Build(string name)
         => new()
         {
+            Name = name,
             Steps = _steps.ToList(),
         };
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Orchestrator.DependencyInjection;
 using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
@@ -47,7 +48,7 @@ public static class SagaRabbitMQConfigurationExtensions
                 ? new RabbitMQAsyncConsumerFactory(serviceProvider.GetRequiredService<IRabbitMQSagaSerializer>())
                 : new RabbitMQConsumerFactory(serviceProvider.GetRequiredService<IRabbitMQSagaSerializer>()));
         configuration.Services.AddSingleton<IRabbitMQSagaSubscriberFactory, RabbitMQSagaSubscriberFactory>();
-        configuration.AddSagaClient<RabbitMQSagaClient>();
+        configuration.Services.AddSingleton<ISagaClient, RabbitMQSagaClient>();
         return configuration;
     }
 }

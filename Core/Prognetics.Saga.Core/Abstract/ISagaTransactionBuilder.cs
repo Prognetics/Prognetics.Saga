@@ -2,5 +2,8 @@
 
 public interface ISagaTransactionBuilder
 {
-    ISagaTransactionBuilder AddStep(string from, string to);
+    ISagaTransactionBuilder AddStep(
+        string from,
+        string to,
+        string compensation);
 }

@@ -12,26 +12,10 @@ public static partial class SagaServiceCollectionExtensions
         var configuration = new SagaConfiguration(serviceCollection);
         configure(configuration);
 
-        serviceCollection.AddScoped<ISagaOrchestratorFactory, SagaOrchestratorFactory>();
+        serviceCollection.AddScoped<ISagaOrchestrator, SagaOrchestrator>();
         serviceCollection.AddScoped<ISagaHost, SagaHost>();
 
         serviceCollection.AddHostedService<SagaBackgroundService>();
         return serviceCollection;
-    }
-
-    public static ISagaConfiguration AddModelSource<TSagaModelSource>(
-        this ISagaConfiguration configuration)
-        where TSagaModelSource : class, ISagaModelSource
-    {
-        configuration.Services.AddScoped<ISagaModelSource, TSagaModelSource>();
-        return configuration;
-    }
-
-    public static ISagaConfiguration AddSagaClient<TSagaClient>(
-        this ISagaConfiguration configuration)
-        where TSagaClient : class, ISagaClient
-    {
-        configuration.Services.AddScoped<ISagaClient, TSagaClient>();
-        return configuration;
     }
 }

@@ -50,10 +50,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
         _serviceCollection = new ServiceCollection()
             .AddLogging()
             .AddSaga(config => config
-                .AddModelSource<DelegateSagaModelSource>()
-                .UseRabbitMQ(_options)
-                .Services.AddSingleton(new Action<ISagaModelBuilder>(builder =>
-                    builder.AddTransaction(t => t.AddStep(_queueSource, _queueTarget)))));
+                .UseRabbitMQ(_options));
 
         _serviceProvider = _serviceCollection.BuildServiceProvider();
 

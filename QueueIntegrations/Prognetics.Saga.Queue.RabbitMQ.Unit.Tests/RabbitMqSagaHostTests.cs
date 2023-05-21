@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
+using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
@@ -16,7 +17,8 @@ public class RabbitMQSagaHostTests
     private readonly IModel _channel;
     private readonly IRabbitMQConnectionFactory _connectionFactory;
     private readonly IRabbitMQQueuesProvider _sagaQueuesProvider;
-    private readonly ISagaOrchestrator _sagaOrchestrator;
+    private readonly IStartableSagaOrchestrator _sagaOrchestrator;
+    private readonly ITransactionLedgerProvider _transactionLedgerProvider;
     private readonly SagaModel _model;
     private readonly IRabbitMQConsumersFactory _consumersFactory;
     private readonly ISagaSubscriber _subscriber;
@@ -32,9 +34,10 @@ public class RabbitMQSagaHostTests
         _connection = Substitute.For<IConnection>();
         _connectionFactory = Substitute.For<IRabbitMQConnectionFactory>();
         _sagaQueuesProvider = Substitute.For<IRabbitMQQueuesProvider>();
-        _sagaOrchestrator = Substitute.For<ISagaOrchestrator>();
+        _sagaOrchestrator = Substitute.For<IStartableSagaOrchestrator>();
+        _transactionLedgerProvider = Substitute.For<ITransactionLedgerProvider>();
         _model = new SagaModel();
-        _sagaOrchestrator.Model.Returns(_model);
+        _transactionLedgerProvider.Get().Returns(Task.FromResult(_model));
         _consumersFactory = Substitute.For<IRabbitMQConsumersFactory>();
         _subscriber = Substitute.For<ISagaSubscriber>();
         _basicConsumer = Substitute.For<IBasicConsumer>();
@@ -47,6 +50,7 @@ public class RabbitMQSagaHostTests
         _subscriberFactory.Create(_channel).Returns(_subscriber);
 
         _sut = new RabbitMQSagaClient(
+            _transactionLedgerProvider,
             _connectionFactory,
             _sagaQueuesProvider,
             _consumersFactory,
@@ -56,7 +60,7 @@ public class RabbitMQSagaHostTests
     }
 
     [Fact]
-    public void WhenHostingIsCorrectlyConfigured_ThenShouldConfigureChannelCorrectly()
+    public async Task WhenHostingIsCorrectlyConfigured_ThenShouldConfigureChannelCorrectly()
     {
         // Arrange
         const int queuesCount = 10;
@@ -74,11 +78,12 @@ public class RabbitMQSagaHostTests
 			})
             .ToList();
 
-		_consumersFactory.Create(_channel, _sagaOrchestrator).Returns(consumers);
+		_consumersFactory.Create(_channel, _sagaOrchestrator, _model).Returns(consumers);
 		var source = new CancellationTokenSource();
 
 		// Act
-		_sut.Start(_sagaOrchestrator);
+        await _sut.Initialize();
+        await _sut.Consume(_sagaOrchestrator);
 
         _channel.Received(queuesCount).QueueDeclare(
             Arg.Is<string>(x => queues.Any(q => q.Name == x)),
@@ -103,11 +108,11 @@ public class RabbitMQSagaHostTests
 			false,
 			null);
 
-		_sagaOrchestrator.Received().Subscribe(_subscriber);
+        Assert.Equal(_subscriber, await _sut.GetSubscriber());
 	}
 
     [Fact]
-    public void WhenExchageIsSet_ThenShouldDeclareQueuesCorrectly()
+    public async Task WhenExchageIsSet_ThenShouldDeclareQueuesCorrectly()
     {
         // Arrange
         const int queuesCount = 10;
@@ -128,11 +133,16 @@ public class RabbitMQSagaHostTests
             })
             .ToList();
 
-        _consumersFactory.Create(_channel, _sagaOrchestrator).Returns(consumers);
-        var source = new CancellationTokenSource();
+        _consumersFactory
+            .Create(
+                _channel,
+                _sagaOrchestrator,
+                _model)
+            .Returns(consumers);
 
         // Act
-        _sut.Start(_sagaOrchestrator);
+        await _sut.Initialize();
+        await _sut.Consume(_sagaOrchestrator);
 
         _channel.Received(queuesCount).QueueDeclare(
             Arg.Is<string>(x => queues.Any(q => q.Name == x)),
@@ -158,6 +168,6 @@ public class RabbitMQSagaHostTests
             false,
             null);
 
-        _sagaOrchestrator.Received().Subscribe(_subscriber);
+        Assert.Equal(_subscriber, await _sut.GetSubscriber());
     }
 }

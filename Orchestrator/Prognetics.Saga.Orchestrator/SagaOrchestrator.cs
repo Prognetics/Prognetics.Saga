@@ -5,52 +5,57 @@ using System.Collections.Concurrent;
 
 namespace Prognetics.Saga.Orchestrator;
 
-public class SagaOrchestrator : ISagaOrchestrator
+public class SagaOrchestrator : IStartableSagaOrchestrator
 {
-    private readonly IReadOnlyDictionary<string, string> _steps;
-    private readonly ConcurrentBag<ISagaSubscriber> _sagaSubscribers = new();
-    private readonly SagaModel _sagaModel;
+    private readonly SagaOptions _sagaOptions;
+    private ISagaSubscriber? _sagaSubscriber;
+    private SagaModel? _sagaModel;
+    private ISagaEngine _engine;
 
-    public SagaModel Model => _sagaModel;
+    public bool IsStarted { get; private set; }
 
-    public SagaOrchestrator(SagaModel sagaModel)
+    public SagaOrchestrator(
+        SagaOptions sagaOptions,
+        ISagaEngine engine) =>
+        (_sagaOptions, _engine) = (sagaOptions, engine);
+
+    public void Start(ISagaSubscriber subscriber)
     {
-        _sagaModel = sagaModel;
-        _steps = GetSteps();
+        _sagaSubscriber = subscriber;
+        IsStarted = true;
     }
 
     public async Task Push(string queueName, InputMessage inputMessage)
     {
-        if (!_steps.TryGetValue(queueName, out var nextStep))
-        {
-            throw new ArgumentException("Queue name not defined", nameof(queueName));
+        if (!IsStarted || _sagaSubscriber is null){
+            throw new InvalidOperationException("Orchestrator have not been started");
         }
 
-        var outputMessage = new OutputMessage(
-            inputMessage.TransactionId ?? Guid.NewGuid().ToString(),
-            inputMessage.Payload);
+        if (string.Equals(
+            queueName,
+            _sagaOptions.ErrorQueueName,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            if (inputMessage.TransactionId is null)
+            {
+                // Log warnning
+                return;
+            }
 
-        await Parallel.ForEachAsync(
-            _sagaSubscribers,
-            (s, _) => new(s.OnMessage(
-                nextStep,
-                outputMessage)));
-    }
+            var compensations = await _engine.Compensate(inputMessage.TransactionId);
+            await Task.WhenAll(
+                compensations.Select(x =>
+                    _sagaSubscriber.OnMessage(x.Key, x.Value)));
+            return;
+        }
 
-    public void Subscribe(ISagaSubscriber sagaSubscriber)
-    {
-        _sagaSubscribers.Add(sagaSubscriber);
-    }
+        var output = await _engine.Process(queueName, inputMessage);
+        if(output.HasValue)
+        {
+            await _sagaSubscriber.OnMessage(
+                output.Value.QueueName,
+                output.Value.Message);
+        }
 
-    private IReadOnlyDictionary<string, string> GetSteps()
-        => _sagaModel.Transactions
-            .SelectMany(x => x.Steps)
-            .ToDictionary(
-                x => x.From,
-                x => x.To);
-
-    public void Dispose()
-    {
-        _sagaSubscribers.Clear();
     }
 }
