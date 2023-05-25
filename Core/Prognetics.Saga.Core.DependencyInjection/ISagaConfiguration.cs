@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Prognetics.Saga.Orchestrator.DependencyInjection;
+namespace Prognetics.Saga.Core.DependencyInjection;
 
 public interface ISagaConfiguration
 {
