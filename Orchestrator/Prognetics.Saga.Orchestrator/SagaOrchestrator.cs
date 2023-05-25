@@ -1,7 +1,6 @@
 ﻿using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
-using System.Collections.Concurrent;
 
 namespace Prognetics.Saga.Orchestrator;
 
@@ -9,8 +8,7 @@ public class SagaOrchestrator : IStartableSagaOrchestrator
 {
     private readonly SagaOptions _sagaOptions;
     private ISagaSubscriber? _sagaSubscriber;
-    private SagaModel? _sagaModel;
-    private ISagaEngine _engine;
+    private readonly ISagaEngine _engine;
 
     public bool IsStarted { get; private set; }
 
@@ -25,15 +23,15 @@ public class SagaOrchestrator : IStartableSagaOrchestrator
         IsStarted = true;
     }
 
-    public async Task Push(string queueName, InputMessage inputMessage)
+    public async Task Push(string eventName, InputMessage inputMessage)
     {
         if (!IsStarted || _sagaSubscriber is null){
             throw new InvalidOperationException("Orchestrator have not been started");
         }
 
         if (string.Equals(
-            queueName,
-            _sagaOptions.ErrorQueueName,
+            eventName,
+            _sagaOptions.ErrorEventName,
             StringComparison.OrdinalIgnoreCase))
         {
             if (inputMessage.TransactionId is null)
@@ -49,7 +47,7 @@ public class SagaOrchestrator : IStartableSagaOrchestrator
             return;
         }
 
-        var output = await _engine.Process(queueName, inputMessage);
+        var output = await _engine.Process(eventName, inputMessage);
         if(output.HasValue)
         {
             await _sagaSubscriber.OnMessage(

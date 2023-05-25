@@ -3,7 +3,7 @@
 public class SagaTransactionStepModel
 {
     public required int Order { get; set; }
-    public required string From { get; init; }
-    public required string To { get; init; }
-    public required string Compensation { get; init; }
+    public required string EventName { get; init; }
+    public required string CompletionEventName { get; init; }
+    public required string CompensationEventName { get; init; }
 }

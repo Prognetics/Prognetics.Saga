@@ -26,13 +26,6 @@ public class SagaHost : ISagaHost
             throw new InvalidOperationException("Orchestrator has been already run");
         }
 
-        var model = (await Task.WhenAll(_sources
-            .Select(s => s.GetSagaModel())))
-            .Aggregate(
-                new SagaModelBuilder(),
-                (builder, model) => builder.From(model))
-            .Build();
-
         await _client.Initialize();
         var subscriber = await _client.GetSubscriber();
         _orchestrator.Start(subscriber);

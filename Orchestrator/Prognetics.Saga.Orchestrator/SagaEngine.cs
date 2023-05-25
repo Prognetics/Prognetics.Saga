@@ -22,20 +22,20 @@ public class SagaEngine : ISagaEngine
         InputMessage inputMessage)
     {
         var transactionLedger = await _transactionLedgerProvider.Get();
-        var step = transactionLedger.Transactions.SelectMany(t => t.Steps).FirstOrDefault(s => 
-            string.Equals(s.From, queueName, StringComparison.OrdinalIgnoreCase));
-        if (step is null){
+        var operation = transactionLedger.Transactions.SelectMany(t => t.Steps).FirstOrDefault(s => 
+            string.Equals(s.EventName, queueName, StringComparison.OrdinalIgnoreCase));
+        if (operation is null){
             // TODO: Log error
             return null;
         }
 
         var transactionId = inputMessage.TransactionId;
 
-        if (step.Order == 0){
+        if (operation.Order == 0){
             transactionId = Guid.NewGuid().ToString(); //TODO: To service
             await _sagaLog.SetState(new TransactionState{
                 TransactionId = transactionId,
-                LastOperation = step.From});
+                LastOperation = operation.EventName});
         }
         else{
             if (inputMessage.TransactionId is null)
@@ -52,15 +52,15 @@ public class SagaEngine : ISagaEngine
             
             var transaction = transactionLedger.Transactions
                 .First(t => t.Steps
-                    .Any(s => s.From.Equals(state.LastOperation, StringComparison.OrdinalIgnoreCase)));
+                    .Any(s => s.EventName.Equals(state.LastOperation, StringComparison.OrdinalIgnoreCase)));
             
-            var lastOperation = transaction.Steps.Single(s => s.From == state.LastOperation);
+            var lastOperation = transaction.Steps.Single(s => s.EventName == state.LastOperation);
             var nextOperation = transaction.Steps.SingleOrDefault(s => s.Order == lastOperation.Order + 1);
 
             if (nextOperation == null
                 || !string.Equals(
-                    nextOperation.From,
-                    step.From,
+                    nextOperation.EventName,
+                    operation.EventName,
                     StringComparison.OrdinalIgnoreCase))
             {
                 // TODO: Log error
@@ -69,19 +69,19 @@ public class SagaEngine : ISagaEngine
 
             await _sagaLog.SetState(new TransactionState{
                 TransactionId = inputMessage.TransactionId,
-                LastOperation = step.From,
+                LastOperation = operation.EventName,
             });
         }
 
         if (inputMessage.Compensation is not null){
             _sagaLog.SaveCompensation(
                 transactionId!,
-                step.Compensation,
+                operation.CompensationEventName,
                 inputMessage.Compensation);
         }
 
         return (
-            step.To,
+            operation.CompletionEventName,
             new OutputMessage(
                 transactionId!,
                 inputMessage.Payload));
