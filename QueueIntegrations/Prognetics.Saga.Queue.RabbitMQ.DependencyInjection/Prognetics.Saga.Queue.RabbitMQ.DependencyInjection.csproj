@@ -7,7 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Orchestrator\Prognetics.Saga.Orchestrator.DependencyInjection\Prognetics.Saga.Orchestrator.DependencyInjection.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Prognetics.Saga.Core.DependencyInjection\Prognetics.Saga.Core.DependencyInjection.csproj" />
     <ProjectReference Include="..\Prognetics.Saga.Queue.RabbitMQ\Prognetics.Saga.Queue.RabbitMQ.csproj" />
   </ItemGroup>
 
