@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Orchestrator\Prognetics.Saga.Orchestrator.DependencyInjection\Prognetics.Saga.Orchestrator.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\Core\Prognetics.Saga.Core.DependencyInjection\Prognetics.Saga.Core.DependencyInjection.csproj" />
     <ProjectReference Include="..\Prognetics.Saga.Queue.RabbitMQ\Prognetics.Saga.Queue.RabbitMQ.csproj" />
   </ItemGroup>
 

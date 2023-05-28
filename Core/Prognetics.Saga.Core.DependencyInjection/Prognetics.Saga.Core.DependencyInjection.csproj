@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Prognetics.Saga.Orchestrator\Prognetics.Saga.Orchestrator.csproj" />
+    <ProjectReference Include="..\..\Orchestrator\Prognetics.Saga.Orchestrator\Prognetics.Saga.Orchestrator.csproj" />
   </ItemGroup>
 
 </Project>
