@@ -23,10 +23,7 @@ public class SagaModelBuilder
     }
 
     public SagaModel Build()
-        => new()
-        {
-            Transactions = _transactions.ToList(),
-        };
+        => new(_transactions.ToList());
 }
 
 

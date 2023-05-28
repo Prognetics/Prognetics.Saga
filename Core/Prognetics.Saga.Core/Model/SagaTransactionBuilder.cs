@@ -14,17 +14,13 @@ class SagaTransactionBuilder : ISagaTransactionBuilder
         _steps.Add(new SagaTransactionStepModel
         {
             Order = _steps.Count(),
-            From = from,
-            To = to,
-            Compensation = compensation
+            EventName = from,
+            CompletionEventName = to,
+            CompensationEventName = compensation
         });
         return this;
     }
 
     public SagaTransactionModel Build(string name)
-        => new()
-        {
-            Name = name,
-            Steps = _steps.ToList(),
-        };
+        => new (name, _steps.ToList());
 }

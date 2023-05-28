@@ -1,7 +1,20 @@
 ﻿namespace Prognetics.Saga.Core.Model;
 
-public class SagaTransactionModel
+public record SagaTransactionModel
 {
-    public required string Name { get; init; }
-    public IReadOnlyList<SagaTransactionStepModel> Steps { get; init; } = new List<SagaTransactionStepModel>();
+    private readonly IReadOnlyDictionary<string, SagaTransactionStepModel> _eventNameToStep;
+    public SagaTransactionModel(
+        string name,
+        IEnumerable<SagaTransactionStepModel> steps)
+    {
+        Name = name;
+        Steps = steps.OrderBy(s => s.Order).ToList();
+        _eventNameToStep = steps.ToDictionary(s => s.EventName.ToUpper());
+    }
+
+    public string Name { get; }
+    public IReadOnlyList<SagaTransactionStepModel> Steps { get; }
+
+    public SagaTransactionStepModel? GetOperationByEventName(string eventName)
+        => _eventNameToStep.GetValueOrDefault(eventName.ToUpper());
 }
