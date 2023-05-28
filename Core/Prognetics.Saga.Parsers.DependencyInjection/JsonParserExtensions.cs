@@ -4,7 +4,7 @@ using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Parsers.Core.Model;
 using System.Reflection;
 
-namespace Prognetics.Saga.Parser.Json.Extensios
+namespace Prognetics.Saga.Parsers.DependencyInjection
 {
     public static class JsonParserExtensions
     {

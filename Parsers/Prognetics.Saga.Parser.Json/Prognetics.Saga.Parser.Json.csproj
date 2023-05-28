@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Prognetics.Saga.Parsers.Core\Prognetics.Saga.Parsers.Core.csproj" />
+    <ProjectReference Include="..\..\Core\Prognetics.Saga.Parsers.DependencyInjection\Prognetics.Saga.Parsers.DependencyInjection.csproj" />
   </ItemGroup>
 
 </Project>
