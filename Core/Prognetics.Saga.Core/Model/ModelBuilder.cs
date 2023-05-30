@@ -2,25 +2,26 @@
 
 namespace Prognetics.Saga.Core.Model;
 
-public class SagaModelBuilder : ISagaModelBuilder
+public class ModelBuilder : IModelBuilder
 {
-    private readonly List<SagaTransactionModel> _transactions = new();
+    private readonly List<Transaction> _transactions = new();
 
-    public ISagaModelBuilder From(SagaModel sagaModel)
+    // todo rename
+    public IModelBuilder From(TransactionsLedger sagaModel)
     {
         _transactions.AddRange(sagaModel.Transactions.ToList());
         return this;
     }
 
-    public ISagaModelBuilder AddTransaction(Action<ISagaTransactionBuilder> builderAction)
+    public IModelBuilder AddTransaction(Action<ITransactionBuilder> builderAction)
     {
-        var transactionBuilder = new SagaTransactionBuilder();
+        var transactionBuilder = new TransactionBuilder();
         builderAction(transactionBuilder);
         _transactions.Add(transactionBuilder.Build());
         return this;
     }
 
-    public SagaModel Build()
+    public TransactionsLedger Build()
         => new()
         {
             Transactions = _transactions.ToList(),

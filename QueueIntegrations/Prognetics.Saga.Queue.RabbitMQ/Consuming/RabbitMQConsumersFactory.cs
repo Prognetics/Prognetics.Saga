@@ -24,7 +24,7 @@ public class RabbitMQConsumersFactory : IRabbitMQConsumersFactory
             .SelectMany(x => x.Steps)
             .Select(x => new RabbitMQConsumer
             {
-                Queue = x.From,
+                Queue = x.EventName,
                 BasicConsumer = consumer
             })
             .ToList();

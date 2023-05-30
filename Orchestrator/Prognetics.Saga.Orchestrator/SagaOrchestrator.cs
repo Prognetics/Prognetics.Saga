@@ -9,11 +9,11 @@ public class SagaOrchestrator : ISagaOrchestrator
 {
     private readonly IReadOnlyDictionary<string, string> _steps;
     private readonly ConcurrentBag<ISagaSubscriber> _sagaSubscribers = new();
-    private readonly SagaModel _sagaModel;
+    private readonly TransactionsLedger _sagaModel;
 
-    public SagaModel Model => _sagaModel;
+    public TransactionsLedger Model => _sagaModel;
 
-    public SagaOrchestrator(SagaModel sagaModel)
+    public SagaOrchestrator(TransactionsLedger sagaModel)
     {
         _sagaModel = sagaModel;
         _steps = GetSteps();
@@ -46,8 +46,8 @@ public class SagaOrchestrator : ISagaOrchestrator
         => _sagaModel.Transactions
             .SelectMany(x => x.Steps)
             .ToDictionary(
-                x => x.From,
-                x => x.To);
+                x => x.EventName,
+                x => x.CompletionEventName);
 
     public void Dispose()
     {
