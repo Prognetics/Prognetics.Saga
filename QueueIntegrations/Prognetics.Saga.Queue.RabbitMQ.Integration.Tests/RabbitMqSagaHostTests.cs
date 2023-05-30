@@ -9,7 +9,8 @@ using Prognetics.Saga.Core.DependencyInjection;
 using Prognetics.Saga.Queue.RabbitMQ.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
-using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Parsers.DependencyInjection;
+using Prognetics.Saga.Parsers.Core.Model;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
 /// <summary>
@@ -45,19 +46,28 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
         _options.ConnectionString = fixture.Container.GetConnectionString();
         _options.Exchange = _exchange;
 
-        _eventName = Guid.NewGuid().ToString();
-        _completionEventName = Guid.NewGuid().ToString();
-        _compensationEventName = Guid.NewGuid().ToString();
-
         _serviceCollection = new ServiceCollection()
             .AddLogging()
             .AddSaga(config => config
-                .AddModelSource<DelegateSagaModelSource>()
-                .UseRabbitMQ(_options)
-                .Services.AddSingleton(new Action<IModelBuilder>(builder =>
-                    builder.AddTransaction(t => t.AddStep(_eventName, _completionEventName, _compensationEventName)))));
+                .UseParser(option =>
+                {
+                    option.Configurations = new List<ReaderConfiguration>
+                    {
+                        new ReaderConfiguration
+                        {
+                            ParserType = "Prognetics.Saga.Parser.Json.Reader.JsonFromFileTransactionLedgerReader, Prognetics.Saga.Parser.Json",
+                            Path = "./TestFiles/JsonParserTestFile.json"
+                        }
+                    };
+                })
+                .UseRabbitMQ(_options));                
+
 
         _serviceProvider = _serviceCollection.BuildServiceProvider();
+
+        _eventName = "Step1";
+        _completionEventName = "Step1Completion";
+        _compensationEventName = "Step1Compensation";
 
         _sut = (_serviceProvider.GetRequiredService<IHostedService>() as SagaBackgroundService)!;
     }

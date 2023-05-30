@@ -17,8 +17,8 @@ namespace Prognetics.Saga.Parser.Json.Reader
         public async Task<TransactionsLedger> GetModel(CancellationToken cancellation = default)
         {
             using var client = new HttpClient();
-            var fileStream = await client.GetStreamAsync(_readerConfiguration.Uri);
-            return await JsonSerializer.DeserializeAsync<TransactionsLedger>(fileStream, (JsonSerializerOptions)null, cancellation);
+            var fileStream = await client.GetStreamAsync(_readerConfiguration.Path);
+            return await JsonSerializer.DeserializeAsync<TransactionsLedger>(fileStream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true}, cancellation);
         }
     }
 }
