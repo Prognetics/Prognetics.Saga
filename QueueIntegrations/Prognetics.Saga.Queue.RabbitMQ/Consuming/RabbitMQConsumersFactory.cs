@@ -16,7 +16,7 @@ public class RabbitMQConsumersFactory : IRabbitMQConsumersFactory
     public IReadOnlyList<RabbitMQConsumer> Create(
         IModel channel,
         ISagaOrchestrator sagaOrchestrator,
-        SagaModel model)
+        TransactionsLedger model)
     {
         var consumer = _rabbitMqSagaConsumerFactory.Create(
             channel,

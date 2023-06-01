@@ -20,7 +20,7 @@ public class RabbitMQSagaClient : ISagaClient
     private readonly IRabbitMQSagaSubscriberFactory _sagaSubscriberFactory;
     private readonly RabbitMQSagaOptions _options;
     private readonly ILogger<IRabbitMQSagaHost> _logger;
-    private SagaModel? _sagaModel;
+    private TransactionsLedger? _sagaModel;
     private IConnection? _connection;
     private IModel? _channel;
 

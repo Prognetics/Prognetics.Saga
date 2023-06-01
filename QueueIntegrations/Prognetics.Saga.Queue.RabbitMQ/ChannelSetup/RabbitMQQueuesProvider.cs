@@ -4,7 +4,7 @@ namespace Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 
 public class RabbitMQQueuesProvider : IRabbitMQQueuesProvider
 {
-    public IReadOnlyList<RabbitMQQueue> GetQueues(SagaModel sagaModel)
+    public IReadOnlyList<RabbitMQQueue> GetQueues(TransactionsLedger sagaModel)
         => sagaModel.Transactions
             .SelectMany(x => x.Steps)
             .Aggregate(

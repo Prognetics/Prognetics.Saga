@@ -3,25 +3,25 @@ using Prognetics.Saga.Core.Model;
 
 namespace Prognetics.Saga.Orchestrator.Unit.Tests;
 
-public class DelegateSagaModelSource : ISagaModelSource
+public class DelegateSagaModelSource : IModelSource
 {
-    private readonly Func<SagaModel> _factory;
+    private readonly Func<TransactionsLedger> _factory;
 
-    public DelegateSagaModelSource(Func<SagaModel> factory)
+    public DelegateSagaModelSource(Func<TransactionsLedger> factory)
     {
         _factory = factory;
     }
 
-    public DelegateSagaModelSource(Action<SagaModelBuilder> configure)
+    public DelegateSagaModelSource(Action<ModelBuilder> configure)
     {
         _factory = () =>
         {
-            var builder = new SagaModelBuilder();
+            var builder = new ModelBuilder();
             configure(builder);
             return builder.Build();
         };
     }
 
-    public Task<SagaModel> GetSagaModel(CancellationToken cancellation = default)
+    public Task<TransactionsLedger> GetModel(CancellationToken cancellation = default)
         => Task.FromResult(_factory());
 }

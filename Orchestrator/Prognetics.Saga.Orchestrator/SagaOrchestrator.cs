@@ -8,7 +8,6 @@ public class SagaOrchestrator : IStartableSagaOrchestrator
 {
     private readonly SagaOptions _sagaOptions;
     private ISagaSubscriber? _sagaSubscriber;
-    private SagaModel? _sagaModel;
     private ISagaEngine _engine;
 
     public bool IsStarted { get; private set; }

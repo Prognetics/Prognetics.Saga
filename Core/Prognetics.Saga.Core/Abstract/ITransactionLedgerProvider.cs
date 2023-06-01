@@ -4,5 +4,5 @@ namespace Prognetics.Saga.Core.Abstract;
 
 public interface ITransactionLedgerProvider
 {
-    Task<SagaModel> Get();
+    Task<TransactionsLedger> Get();
 }

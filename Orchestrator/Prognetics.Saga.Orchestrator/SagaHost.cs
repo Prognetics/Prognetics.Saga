@@ -6,16 +6,17 @@ namespace Prognetics.Saga.Orchestrator;
 
 public class SagaHost : ISagaHost
 {
-    private readonly IReadOnlyList<ISagaModelSource> _sources;
+    private readonly IReadOnlyList<IModelSource> _sources;
+    private readonly ITransactionLedgerProvider _transactionLedgerProvider;
     private readonly ISagaClient _client;
     private IStartableSagaOrchestrator _orchestrator;
 
     public SagaHost(
-        IEnumerable<ISagaModelSource> sources,
+        ITransactionLedgerProvider transactionLedgerProvider,
         ISagaClient client,
         IStartableSagaOrchestrator orchestrator)
     {
-        _sources = sources.ToList();
+        _transactionLedgerProvider = transactionLedgerProvider;
         _client = client;
         _orchestrator = orchestrator;
     }
@@ -26,12 +27,7 @@ public class SagaHost : ISagaHost
             throw new InvalidOperationException("Orchestrator has been already run");
         }
 
-        var model = (await Task.WhenAll(_sources
-            .Select(s => s.GetSagaModel())))
-            .Aggregate(
-                new SagaModelBuilder(),
-                (builder, model) => builder.From(model))
-            .Build();
+        var model = await _transactionLedgerProvider.Get();
 
         await _client.Initialize();
         var subscriber = await _client.GetSubscriber();

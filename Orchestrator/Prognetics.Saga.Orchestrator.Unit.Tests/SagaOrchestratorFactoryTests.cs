@@ -19,7 +19,7 @@ public class SagaModelBuilderTests
         const string toPrefix = nameof(toPrefix);
         const string compensationPrefix = nameof(compensationPrefix);
 
-        var builder = new SagaModelBuilder();
+        var builder = new ModelBuilder();
         for (int sourceNumber = 0; sourceNumber < transactionsCountPerSource.Length; sourceNumber++){
             var transactionsCount = transactionsCountPerSource[sourceNumber];
             Enumerable.Range(0, transactionsCount).ToList().ForEach(ti =>

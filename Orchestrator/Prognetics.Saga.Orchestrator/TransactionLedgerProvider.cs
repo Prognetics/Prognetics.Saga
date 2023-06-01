@@ -5,18 +5,18 @@ namespace Prognetics.Saga.Orchestrator;
 
 public class TransactionLedgerProvider : ITransactionLedgerProvider
 {
-    private readonly Lazy<Task<SagaModel>> _sagaModel;
-    public TransactionLedgerProvider(IEnumerable<ISagaModelSource> sources)
+    private readonly Lazy<Task<TransactionsLedger>> _sagaModel;
+    public TransactionLedgerProvider(IEnumerable<IModelSource> sources)
     {
-        _sagaModel = new Lazy<Task<SagaModel>>(async () => 
+        _sagaModel = new Lazy<Task<TransactionsLedger>>(async () => 
             (await Task.WhenAll(
-                sources.Select(s => s.GetSagaModel())))
+                sources.Select(s => s.GetModel())))
             .Aggregate(
-                new SagaModelBuilder(),
+                new ModelBuilder(),
                 (builder, model) => builder.From(model))
             .Build());
     }
 
-    public Task<SagaModel> Get()
+    public Task<TransactionsLedger> Get()
         => _sagaModel.Value;
 }

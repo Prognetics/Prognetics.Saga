@@ -26,19 +26,19 @@ public class SagaEngine : ISagaEngine
     public async Task<EngineOutput?> Process(EngineInput input)
     {
         var transactionLedger = await _transactionLedgerProvider.Get();
-        var transactionModel = transactionLedger.GetSagaTransactionByEventName(input.EventName);
-        var operationModel = transactionModel?.GetOperationByEventName(input.EventName);
+        var transactionModel = transactionLedger.GetTransactionByEventName(input.EventName);
+        var stepRecord = transactionModel?.GetStepByEventName(input.EventName);
 
-        if (transactionModel is null || operationModel is null){
+        if (transactionModel is null || !stepRecord.HasValue){
             // TODO: Log error
             return null;
         }
 
         var transactionId = input.Message.TransactionId;
 
-        if (operationModel.Order == 0)
+        if (stepRecord.Value.Order == 0)
         {
-            transactionId = await CreateNewTransaction(operationModel);
+            transactionId = await CreateNewTransaction(stepRecord.Value.Step);
         }
         else
         {
@@ -54,34 +54,39 @@ public class SagaEngine : ISagaEngine
                 return null;
             }
             
-            var lastOperation = transactionModel.GetOperationByEventName(state.LastEvent);
-            if (operationModel != lastOperation?.Next)
+            var lastOperation = transactionModel.GetStepByEventName(state.LastEvent);
+            var nextOperation = lastOperation.HasValue
+                ? transactionModel.GetStepByOrderNumber(lastOperation.Value.Order)
+                : null;
+
+            if (stepRecord.Value.Step != nextOperation)
             {
                 // TODO: Log error
                 return null;
             }
 
-            await _sagaLog.SetState(new (){
+            await _sagaLog.SetState(new ()
+            {
                 TransactionId = transactionId,
-                LastEvent = operationModel.EventName,
+                LastEvent = stepRecord.Value.Step.EventName,
             });
         }
 
         if (input.Message.Compensation is not null){
             await _compensationStore.SaveCompensation(new(
                 transactionId,
-                operationModel.CompensationEventName,
+                stepRecord.Value.Step.CompensationEventName,
                 input.Message.Compensation));
         }
 
         return new (
-            operationModel.CompletionEventName,
+            stepRecord.Value.Step.CompletionEventName,
             new OutputMessage(
                 transactionId,
                 input.Message.Payload));
     }
 
-    private async Task<string> CreateNewTransaction(SagaTransactionStepModel operationModel)
+    private async Task<string> CreateNewTransaction(Step operationModel)
     {
         var transactionId = _identifierService.Generate();
         await _sagaLog.SetState(new TransactionState
