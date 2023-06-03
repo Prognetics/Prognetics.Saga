@@ -47,7 +47,7 @@ public class SagaOrchestrator : IStartableSagaOrchestrator
             return;
         }
 
-        var output = await _engine.Process(new(queueName, inputMessage));
+        var output = await _engine.Process(new(eventName, inputMessage));
         if(output.HasValue)
         {
             await _sagaSubscriber.OnMessage(

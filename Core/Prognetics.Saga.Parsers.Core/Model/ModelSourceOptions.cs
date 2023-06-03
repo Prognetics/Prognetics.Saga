@@ -2,6 +2,6 @@
 {
     public class ModelSourceOptions
     {
-        public List<ReaderConfiguration> Configurations { get; set; }
+        public List<ReaderConfiguration> Configurations { get; set; } = new();
     }
 }

@@ -8,13 +8,13 @@ public class SagaEngine : ISagaEngine
 {
     private readonly ISagaLog _sagaLog;
     private readonly ICompensationStore _compensationStore;
-    private readonly ITransactionLedgerProvider _transactionLedgerProvider;
+    private readonly ITransactionLedgerAccessor _transactionLedgerProvider;
     private readonly IIdentifierService _identifierService;
 
     public SagaEngine(
         ISagaLog sagaLog,
         ICompensationStore compensationStore,
-        ITransactionLedgerProvider transactionLedgerProvider,
+        ITransactionLedgerAccessor transactionLedgerProvider,
         IIdentifierService identifierService)
     {
         _sagaLog = sagaLog;
@@ -25,7 +25,7 @@ public class SagaEngine : ISagaEngine
 
     public async Task<EngineOutput?> Process(EngineInput input)
     {
-        var transactionLedger = await _transactionLedgerProvider.Get();
+        var transactionLedger = _transactionLedgerProvider.TransactionsLedger;
         var transactionModel = transactionLedger.GetTransactionByEventName(input.EventName);
         var stepRecord = transactionModel?.GetStepByEventName(input.EventName);
 

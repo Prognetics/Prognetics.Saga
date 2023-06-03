@@ -2,8 +2,8 @@
 {
     public class ReaderConfiguration
     {
-        public string ParserType { get; set; }
+        public string? ParserType { get; set; }
 
-        public string Path { get; set; }
+        public string? Path { get; set; }
     }
 }

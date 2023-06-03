@@ -30,7 +30,6 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
 
     private readonly string _eventName;
     private readonly string _completionEventName;
-    private readonly string _compensationEventName;
     private const string _exchange = "saga";
     private readonly IServiceCollection _serviceCollection;
     private readonly IServiceProvider _serviceProvider;
@@ -67,7 +66,6 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
 
         _eventName = "Step1";
         _completionEventName = "Step1Completion";
-        _compensationEventName = "Step1Compensation";
 
         _sut = (_serviceProvider.GetRequiredService<IHostedService>() as SagaBackgroundService)!;
     }

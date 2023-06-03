@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Orchestrator;
 
 namespace Prognetics.Saga.Core.DependencyInjection;
@@ -10,7 +11,8 @@ public class SagaBackgroundService : BackgroundService
     private ISagaHost? _host;
     private bool _isRunning;
 
-    public SagaBackgroundService(IServiceProvider serviceProvider)
+    public SagaBackgroundService(
+        IServiceProvider serviceProvider)
         => _serviceProvider = serviceProvider;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -21,7 +23,8 @@ public class SagaBackgroundService : BackgroundService
         }
 
         _scope = _serviceProvider.CreateScope();
-        _host = _serviceProvider.GetRequiredService<ISagaHost>();
+        await _scope.ServiceProvider.GetRequiredService<ITransactionLedgerAccessor>().Initialize(stoppingToken);
+        _host = _scope.ServiceProvider.GetRequiredService<ISagaHost>();
         await _host.Start(stoppingToken);
         _isRunning = true;
     }

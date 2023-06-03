@@ -3,20 +3,27 @@ using Prognetics.Saga.Core.Model;
 
 namespace Prognetics.Saga.Orchestrator;
 
-public class TransactionLedgerProvider : ITransactionLedgerProvider
+public class TransactionLedgerProvider : ITransactionLedgerAccessor
 {
-    private readonly Lazy<Task<TransactionsLedger>> _sagaModel;
+    private TransactionsLedger? _sagaModel;
+    private readonly IEnumerable<IModelSource> _sources;
+
     public TransactionLedgerProvider(IEnumerable<IModelSource> sources)
     {
-        _sagaModel = new Lazy<Task<TransactionsLedger>>(async () => 
-            (await Task.WhenAll(
-                sources.Select(s => s.GetModel())))
+        _sources = sources;
+    }
+
+    public async Task Initialize(CancellationToken cancellation = default)
+    {
+        _sagaModel = (await Task.WhenAll(
+            _sources.Select(s => s.GetModel(cancellation))))
             .Aggregate(
                 new ModelBuilder(),
                 (builder, model) => builder.From(model))
-            .Build());
+            .Build();
     }
 
-    public Task<TransactionsLedger> Get()
-        => _sagaModel.Value;
+    public TransactionsLedger TransactionsLedger
+        => _sagaModel
+        ?? throw new InvalidOperationException("Transaction ledger has not been initialized");
 }
