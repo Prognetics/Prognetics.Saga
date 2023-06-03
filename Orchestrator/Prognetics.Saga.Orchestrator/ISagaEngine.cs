@@ -3,8 +3,7 @@ using Prognetics.Saga.Orchestrator.Contract.DTO;
 namespace Prognetics.Saga.Orchestrator;
 public interface ISagaEngine
 {
-    Task<(string QueueName, OutputMessage Message)?> Process(
-        string queueName, InputMessage inputMessage);
+    Task<EngineOutput?> Process(EngineInput input);
 
-    Task<IReadOnlyDictionary<string, OutputMessage>> Compensate(string transactionId);
+    Task<IEnumerable<EngineOutput>> Compensate(string transactionId);
 }

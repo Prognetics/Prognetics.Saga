@@ -19,7 +19,7 @@ public class RabbitMQSagaHostTests
     private readonly IRabbitMQQueuesProvider _sagaQueuesProvider;
     private readonly IStartableSagaOrchestrator _sagaOrchestrator;
     private readonly ITransactionLedgerProvider _transactionLedgerProvider;
-    private readonly SagaModel _model;
+    private readonly TransactionsLedger _model;
     private readonly IRabbitMQConsumersFactory _consumersFactory;
     private readonly ISagaSubscriber _subscriber;
     private readonly IBasicConsumer _basicConsumer;
@@ -36,7 +36,7 @@ public class RabbitMQSagaHostTests
         _sagaQueuesProvider = Substitute.For<IRabbitMQQueuesProvider>();
         _sagaOrchestrator = Substitute.For<IStartableSagaOrchestrator>();
         _transactionLedgerProvider = Substitute.For<ITransactionLedgerProvider>();
-        _model = new SagaModel();
+        _model = new TransactionsLedger();
         _transactionLedgerProvider.Get().Returns(Task.FromResult(_model));
         _consumersFactory = Substitute.For<IRabbitMQConsumersFactory>();
         _subscriber = Substitute.For<ISagaSubscriber>();

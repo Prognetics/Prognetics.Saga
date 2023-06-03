@@ -1,0 +1,44 @@
+{
+  "transactions": [
+    {
+      "name": "TestTransaction1",
+      "steps": [
+        {
+          "eventName": "Step1",
+          "completionEventName": "Step1Completion",
+          "compensationEventName": "Step1Compensation"
+        },
+        {
+          "eventName": "Step2",
+          "completionEventName": "Step2Completion",
+          "compensationEventName": "Step2Compensation"
+        },
+        {
+          "eventName": "Step3",
+          "completionEventName": "Step3Completion",
+          "compensationEventName": "Step3Compensation"
+        }
+      ]
+    },
+    {
+      "name": "TestTransaction2",
+      "steps": [
+        {
+          "eventName": "Transaction2Step1",
+          "completionEventName": "Transaction2Step1Completion",
+          "compensationEventName": "Transaction2Step1Compensation"
+        },
+        {
+          "eventName": "Transaction2Step2",
+          "completionEventName": "Transaction2Step2Completion",
+          "compensationEventName": "Transaction2Step2Compensation"
+        },
+        {
+          "eventName": "Transaction2Step3",
+          "completionEventName": "Transaction2Step3Completion",
+          "compensationEventName": "Transaction2Step3Compensation"
+        }
+      ]
+    }
+  ]
+}

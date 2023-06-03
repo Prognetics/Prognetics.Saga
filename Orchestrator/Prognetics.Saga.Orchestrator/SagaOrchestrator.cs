@@ -43,15 +43,15 @@ public class SagaOrchestrator : IStartableSagaOrchestrator
             var compensations = await _engine.Compensate(inputMessage.TransactionId);
             await Task.WhenAll(
                 compensations.Select(x =>
-                    _sagaSubscriber.OnMessage(x.Key, x.Value)));
+                    _sagaSubscriber.OnMessage(x.EventName, x.Message)));
             return;
         }
 
-        var output = await _engine.Process(eventName, inputMessage);
+        var output = await _engine.Process(new(queueName, inputMessage));
         if(output.HasValue)
         {
             await _sagaSubscriber.OnMessage(
-                output.Value.QueueName,
+                output.Value.EventName,
                 output.Value.Message);
         }
 

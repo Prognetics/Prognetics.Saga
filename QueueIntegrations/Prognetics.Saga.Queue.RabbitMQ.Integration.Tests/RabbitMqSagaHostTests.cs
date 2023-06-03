@@ -5,11 +5,12 @@ using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
-using Prognetics.Saga.Orchestrator.DependencyInjection;
+using Prognetics.Saga.Core.DependencyInjection;
 using Prognetics.Saga.Queue.RabbitMQ.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
-using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Parsers.DependencyInjection;
+using Prognetics.Saga.Parsers.Core.Model;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
 /// <summary>
@@ -27,8 +28,9 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
     private readonly IModel _channel;
     private readonly IBasicProperties _properties;
 
-    private readonly string _queueSource;
-    private readonly string _queueTarget;
+    private readonly string _eventName;
+    private readonly string _completionEventName;
+    private readonly string _compensationEventName;
     private const string _exchange = "saga";
     private readonly IServiceCollection _serviceCollection;
     private readonly IServiceProvider _serviceProvider;
@@ -44,15 +46,28 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
         _options.ConnectionString = fixture.Container.GetConnectionString();
         _options.Exchange = _exchange;
 
-        _queueSource = Guid.NewGuid().ToString();
-        _queueTarget = Guid.NewGuid().ToString();
-
         _serviceCollection = new ServiceCollection()
             .AddLogging()
             .AddSaga(config => config
-                .UseRabbitMQ(_options));
+                .UseParser(option =>
+                {
+                    option.Configurations = new List<ReaderConfiguration>
+                    {
+                        new ReaderConfiguration
+                        {
+                            ParserType = "Prognetics.Saga.Parser.Json.Reader.JsonFromFileTransactionLedgerReader, Prognetics.Saga.Parser.Json",
+                            Path = "./TestFiles/JsonParserTestFile.json"
+                        }
+                    };
+                })
+                .UseRabbitMQ(_options));                
+
 
         _serviceProvider = _serviceCollection.BuildServiceProvider();
+
+        _eventName = "Step1";
+        _completionEventName = "Step1Completion";
+        _compensationEventName = "Step1Compensation";
 
         _sut = (_serviceProvider.GetRequiredService<IHostedService>() as SagaBackgroundService)!;
     }
@@ -75,12 +90,12 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
 
         _channel.BasicPublish(
             _exchange,
-            _queueSource,
+            _eventName,
             _properties,
             messageBytes);
 
         var result = _gettingRetryPolicy.Execute(() =>
-            _channel.BasicGet(_queueTarget, true));
+            _channel.BasicGet(_completionEventName, true));
 
         // Assert
         Assert.NotNull(result);
@@ -107,12 +122,12 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
 
         _channel.BasicPublish(
             _exchange,
-            _queueSource,
+            _eventName,
             _properties,
             messageBytes);
 
         var result = _gettingRetryPolicy.Execute(() =>
-            _channel.BasicGet(_queueTarget, true));
+            _channel.BasicGet(_completionEventName, true));
         
         // Assert
         Assert.Null(result);
@@ -141,7 +156,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
             messageBytes);
 
         var result = _gettingRetryPolicy.Execute(() =>
-            _channel.BasicGet(_queueTarget, true));
+            _channel.BasicGet(_completionEventName, true));
 
         // Assert
         Assert.Null(result);
