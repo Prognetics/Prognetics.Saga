@@ -31,6 +31,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
     private readonly string _eventName;
     private readonly string _completionEventName;
     private const string _exchange = "saga";
+    private const string _errorEventName = "error";
     private readonly IServiceCollection _serviceCollection;
     private readonly IServiceProvider _serviceProvider;
     private readonly SagaBackgroundService _sut;
@@ -48,6 +49,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
         _serviceCollection = new ServiceCollection()
             .AddLogging()
             .AddSaga(config => config
+                .Configure(x => x.ErrorEventName = _errorEventName)
                 .UseParser(option =>
                 {
                     option.Configurations = new List<ReaderConfiguration>
