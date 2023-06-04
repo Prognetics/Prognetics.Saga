@@ -23,7 +23,7 @@ public class SagaOrchestratorFactory : ISagaOrchestratorFactory
 
         foreach (var model in models)
         {
-            builder.From(await model);
+            builder.FromLedger(await model);
         }
 
         return new SagaOrchestrator(builder.Build());

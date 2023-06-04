@@ -7,7 +7,7 @@ public class ModelBuilder : IModelBuilder
     private readonly List<Transaction> _transactions = new();
 
     // todo rename
-    public IModelBuilder From(TransactionsLedger sagaModel)
+    public IModelBuilder FromLedger(TransactionsLedger sagaModel)
     {
         _transactions.AddRange(sagaModel.Transactions.ToList());
         return this;
