@@ -37,18 +37,18 @@ public static class SagaRabbitMQConfigurationExtensions
     {
         configuration.Services.Configure(configureOptions);
         configuration.Services.AddTransient(x => x.GetRequiredService<IOptions<RabbitMQSagaOptions>>().Value);
-        configuration.Services.AddSingleton<IRabbitMQSagaSerializer, RabbitMQSagaJsonSerializer>();
-        configuration.Services.AddSingleton<IRabbitMQConnectionFactory, RabbitMQConnectionFactory>();
-        configuration.Services.AddSingleton<IRabbitMQQueuesProvider, RabbitMQQueuesProvider>();
-        configuration.Services.AddSingleton<IRabbitMQConsumersFactory, RabbitMQConsumersFactory>();
-        configuration.Services.AddSingleton<IRabbitMQConsumerFactory>(serviceProvider =>
+        configuration.Services.AddScoped<IRabbitMQSagaSerializer, RabbitMQSagaJsonSerializer>();
+        configuration.Services.AddScoped<IRabbitMQConnectionFactory, RabbitMQConnectionFactory>();
+        configuration.Services.AddScoped<IRabbitMQQueuesProvider, RabbitMQQueuesProvider>();
+        configuration.Services.AddScoped<IRabbitMQConsumersFactory, RabbitMQConsumersFactory>();
+        configuration.Services.AddScoped<IRabbitMQConsumerFactory>(serviceProvider =>
             serviceProvider
                 .GetRequiredService<IOptions<RabbitMQSagaOptions>>().Value
                 .DispatchConsumersAsync
                 ? new RabbitMQAsyncConsumerFactory(serviceProvider.GetRequiredService<IRabbitMQSagaSerializer>())
                 : new RabbitMQConsumerFactory(serviceProvider.GetRequiredService<IRabbitMQSagaSerializer>()));
-        configuration.Services.AddSingleton<IRabbitMQSagaSubscriberFactory, RabbitMQSagaSubscriberFactory>();
-        configuration.Services.AddSingleton<ISagaClient, RabbitMQSagaClient>();
+        configuration.Services.AddScoped<IRabbitMQSagaSubscriberFactory, RabbitMQSagaSubscriberFactory>();
+        configuration.Services.AddScoped<ISagaClient, RabbitMQSagaClient>();
         return configuration;
     }
 }
