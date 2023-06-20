@@ -1,7 +1,7 @@
 ﻿using Prognetics.Saga.Core.Model;
 
 namespace Prognetics.Saga.Orchestrator.Unit.Tests;
-public class SagaModelBuilderTests
+public class TransactionLedgerTests
 {
     [Theory]
     [InlineData(new int[] { }, 0)]
