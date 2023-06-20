@@ -23,7 +23,7 @@ public class SagaBackgroundService : BackgroundService
         }
 
         _scope = _serviceProvider.CreateScope();
-        await _scope.ServiceProvider.GetRequiredService<ITransactionLedgerAccessor>().Initialize(stoppingToken);
+        await _scope.ServiceProvider.GetRequiredService<IInitializableTransactionLedgerAccessor>().Initialize(stoppingToken);
         _host = _scope.ServiceProvider.GetRequiredService<ISagaHost>();
         await _host.Start(stoppingToken);
         _isRunning = true;

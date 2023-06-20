@@ -1,6 +1,6 @@
 namespace Prognetics.Saga.Orchestrator;
 
 public readonly record struct Compensation(
-    object TransactionId,
+    string TransactionId,
     string EventName,
     object Content);

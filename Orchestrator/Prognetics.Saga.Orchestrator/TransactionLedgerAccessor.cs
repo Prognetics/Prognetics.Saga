@@ -3,7 +3,7 @@ using Prognetics.Saga.Core.Model;
 
 namespace Prognetics.Saga.Orchestrator;
 
-public class TransactionLedgerAccessor : ITransactionLedgerAccessor
+public class TransactionLedgerAccessor : IInitializableTransactionLedgerAccessor
 {
     private TransactionsLedger? _sagaModel;
     private readonly IEnumerable<IModelSource> _sources;

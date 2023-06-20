@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Prognetics.Saga.Orchestrator;
 
 public interface ICompensationStore{

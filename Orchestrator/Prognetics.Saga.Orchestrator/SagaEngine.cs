@@ -38,7 +38,12 @@ public class SagaEngine : ISagaEngine
 
         if (stepRecord.Value.Order == 0)
         {
-            transactionId = await CreateNewTransaction(stepRecord.Value.Step);
+            transactionId = _identifierService.Generate();
+            await _sagaLog.SetState(new TransactionState
+            {
+                TransactionId = transactionId,
+                LastEvent = stepRecord.Value.Step.EventName
+            });
         }
         else
         {
@@ -56,7 +61,7 @@ public class SagaEngine : ISagaEngine
             
             var lastOperation = transactionModel.GetStepByEventName(state.LastEvent);
             var nextOperation = lastOperation.HasValue
-                ? transactionModel.GetStepByOrderNumber(lastOperation.Value.Order)
+                ? transactionModel.GetStepByOrderNumber(lastOperation.Value.Order + 1)
                 : null;
 
             if (stepRecord.Value.Step != nextOperation)
@@ -84,18 +89,6 @@ public class SagaEngine : ISagaEngine
             new OutputMessage(
                 transactionId,
                 input.Message.Payload));
-    }
-
-    private async Task<string> CreateNewTransaction(Step operationModel)
-    {
-        var transactionId = _identifierService.Generate();
-        await _sagaLog.SetState(new TransactionState
-        {
-            TransactionId = transactionId,
-            LastEvent = operationModel.EventName
-        });
-
-        return transactionId;
     }
 
     public async Task<IEnumerable<EngineOutput>> Compensate(string transactionId)

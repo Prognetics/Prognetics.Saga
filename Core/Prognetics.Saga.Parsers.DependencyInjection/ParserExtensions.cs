@@ -15,7 +15,7 @@ namespace Prognetics.Saga.Parsers.DependencyInjection
             configuration.Services.Configure(configureOptions);
             configuration.Services.AddTransient(x => x.GetRequiredService<IOptions<ModelSourceOptions>>().Value);
                          
-            configuration.Services.AddSingleton<IEnumerable<IModelSource>>(provider =>
+            configuration.Services.AddScoped<IEnumerable<IModelSource>>(provider =>
                 provider.GetRequiredService<ModelSourceOptions>().Configurations.Aggregate(
                     new List<IModelSource>(),
                     (sources, c) =>
