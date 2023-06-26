@@ -2,7 +2,7 @@
 
 namespace Prognetics.Saga.Orchestrator;
 
-public class CompensationStore : ICompensationStore
+public class InMemoryCompensationStore : ICompensationStore
 {
     private readonly ConcurrentDictionary<string, ConcurrentStack<Compensation>> _compensations  = new();
     public Task<IEnumerable<Compensation>> GetCompensations(string transactionId)

@@ -1,5 +1,4 @@
 using Prognetics.Saga.Core.Abstract;
-using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
 
 namespace Prognetics.Saga.Orchestrator;
@@ -29,20 +28,21 @@ public class SagaEngine : ISagaEngine
         var transactionModel = transactionLedger.GetTransactionByEventName(input.EventName);
         var stepRecord = transactionModel?.GetStepByEventName(input.EventName);
 
-        if (transactionModel is null || !stepRecord.HasValue){
+        if (stepRecord is null || transactionModel is null)
+        {
             // TODO: Log error
             return null;
         }
 
         var transactionId = input.Message.TransactionId;
 
-        if (stepRecord.Value.Order == 0)
+        if (stepRecord.Order == 0)
         {
             transactionId = _identifierService.Generate();
             await _sagaLog.SetState(new TransactionState
             {
                 TransactionId = transactionId,
-                LastEvent = stepRecord.Value.Step.EventName
+                LastEvent = stepRecord.Step.EventName
             });
         }
         else
@@ -60,11 +60,11 @@ public class SagaEngine : ISagaEngine
             }
             
             var lastOperation = transactionModel.GetStepByEventName(state.LastEvent);
-            var nextOperation = lastOperation.HasValue
-                ? transactionModel.GetStepByOrderNumber(lastOperation.Value.Order + 1)
+            var nextOperation = lastOperation is not null
+                ? transactionModel.GetStepByOrderNumber(lastOperation.Order + 1)
                 : null;
 
-            if (stepRecord.Value.Step != nextOperation)
+            if (stepRecord.Step != nextOperation)
             {
                 // TODO: Log error
                 return null;
@@ -73,19 +73,19 @@ public class SagaEngine : ISagaEngine
             await _sagaLog.SetState(new ()
             {
                 TransactionId = transactionId,
-                LastEvent = stepRecord.Value.Step.EventName,
+                LastEvent = stepRecord.Step.EventName,
             });
         }
 
         if (input.Message.Compensation is not null){
             await _compensationStore.SaveCompensation(new(
                 transactionId,
-                stepRecord.Value.Step.CompensationEventName,
+                stepRecord.Step.CompensationEventName,
                 input.Message.Compensation));
         }
 
         return new (
-            stepRecord.Value.Step.CompletionEventName,
+            stepRecord.Step.CompletionEventName,
             new OutputMessage(
                 transactionId,
                 input.Message.Payload));

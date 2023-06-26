@@ -18,9 +18,9 @@ public static partial class SagaServiceCollectionExtensions
         serviceCollection.AddScoped<IStartableSagaOrchestrator, SagaOrchestrator>();
         serviceCollection.AddScoped<ISagaOrchestrator>(sp => sp.GetRequiredService<IStartableSagaOrchestrator>());
         
-        serviceCollection.AddScoped<IIdentifierService, IdentifierService>();
+        serviceCollection.AddScoped<IIdentifierService, GuidIdentifierService>();
         serviceCollection.AddScoped<ISagaLog, SagaLog>();
-        serviceCollection.AddScoped<ICompensationStore, CompensationStore>();
+        serviceCollection.AddScoped<ICompensationStore, InMemoryCompensationStore>();
         serviceCollection.AddScoped<ISagaEngine, SagaEngine>();
         serviceCollection.AddScoped<ISagaHost, SagaHost>();
 

@@ -1,3 +1,3 @@
 namespace Prognetics.Saga.Core.Model;
 
-public readonly record struct StepRecord(int Order, Step Step);
+public record StepRecord(int Order, Step Step);
