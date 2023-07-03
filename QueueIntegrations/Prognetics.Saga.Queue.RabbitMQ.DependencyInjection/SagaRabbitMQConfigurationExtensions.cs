@@ -47,6 +47,12 @@ public static class SagaRabbitMQConfigurationExtensions
                 .DispatchConsumersAsync
                 ? new RabbitMQAsyncConsumerFactory(serviceProvider.GetRequiredService<IRabbitMQSagaSerializer>())
                 : new RabbitMQConsumerFactory(serviceProvider.GetRequiredService<IRabbitMQSagaSerializer>()));
+        configuration.Services.AddScoped<IRabbitMQDLXConsumerFactory>(serviceProvider =>
+            serviceProvider
+                .GetRequiredService<IOptions<RabbitMQSagaOptions>>().Value
+                .DispatchConsumersAsync
+                ? new RabbitMQDLXAsyncConsumerFactory(serviceProvider.GetRequiredService<IRabbitMQSagaSerializer>())
+                : new RabbitMQDLXConsumerFactory(serviceProvider.GetRequiredService<IRabbitMQSagaSerializer>()));
         configuration.Services.AddScoped<IRabbitMQSagaSubscriberFactory, RabbitMQSagaSubscriberFactory>();
         configuration.Services.AddScoped<ISagaClient, RabbitMQSagaClient>();
         return configuration;
