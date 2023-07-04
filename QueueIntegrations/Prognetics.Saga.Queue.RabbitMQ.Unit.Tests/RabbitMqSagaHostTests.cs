@@ -68,7 +68,7 @@ public class RabbitMQSagaHostTests
             .Select(x => new RabbitMQQueue { Name = $"Queue{x}" })
             .ToList();
 
-        _sagaQueuesProvider.GetQueues(_model).Returns(queues);
+        _sagaQueuesProvider.GetQueues().Returns(queues);
 
         var consumers = Enumerable.Range(0, queuesCount)
 			.Select(x => new RabbitMQConsumer
@@ -78,7 +78,7 @@ public class RabbitMQSagaHostTests
 			})
             .ToList();
 
-		_consumersFactory.Create(_channel, _sagaOrchestrator, _model).Returns(consumers);
+		_consumersFactory.Create(_channel, _sagaOrchestrator).Returns(consumers);
 		var source = new CancellationTokenSource();
 
 		// Act
@@ -115,14 +115,14 @@ public class RabbitMQSagaHostTests
     public async Task WhenExchageIsSet_ThenShouldDeclareQueuesCorrectly()
     {
         // Arrange
+        const string exchange = "saga";
         const int queuesCount = 10;
         var queues = Enumerable.Range(0, queuesCount)
-            .Select(x => new RabbitMQQueue { Name = $"Queue{x}" })
+            .Select(x => new RabbitMQQueue { Name = $"Queue{x}", Exchange = exchange })
             .ToList();
 
-        const string exchange = "saga";
 
-        _sagaQueuesProvider.GetQueues(_model).Returns(queues);
+        _sagaQueuesProvider.GetQueues().Returns(queues);
         _options.Exchange = exchange;
 
         var consumers = Enumerable.Range(0, queuesCount)
@@ -136,8 +136,7 @@ public class RabbitMQSagaHostTests
         _consumersFactory
             .Create(
                 _channel,
-                _sagaOrchestrator,
-                _model)
+                _sagaOrchestrator)
             .Returns(consumers);
 
         // Act

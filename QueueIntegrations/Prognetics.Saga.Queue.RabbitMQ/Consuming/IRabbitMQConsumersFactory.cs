@@ -8,6 +8,5 @@ public interface IRabbitMQConsumersFactory
 {
     IReadOnlyList<RabbitMQConsumer> Create(
         IModel channel,
-        ISagaOrchestrator orchestrator,
-        TransactionsLedger sagaModel);
+        ISagaOrchestrator orchestrator);
 }

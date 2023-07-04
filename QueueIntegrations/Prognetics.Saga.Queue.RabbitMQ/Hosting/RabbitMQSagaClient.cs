@@ -55,28 +55,9 @@ public class RabbitMQSagaClient : ISagaClient
             _channel.ExchangeDeclare(exchange, ExchangeType.Direct);
         }
 
-        if(!string.IsNullOrEmpty(_options.DLXExchange)
-            && !string.IsNullOrEmpty(_options.DLXQueue))
-        {
-            _channel.ExchangeDeclare(_options.DLXExchange, ExchangeType.Direct);
-            _channel.QueueDeclare(
-                _options.DLXQueue,
-                true,
-                false,
-                false,
-                new Dictionary<string, object>
-                {
-                    { "x-dead-letter-exchange", _options.DLXExchange}
-                });
+        _channel.ExchangeDeclare(_options.DLXExchange, ExchangeType.Direct);
 
-            _channel.QueueBind(
-                _options.DLXQueue,
-                _options.DLXExchange,
-                _options.DLXQueue,
-                null);
-        }
-
-        foreach (var queue in _queuesProvider.GetQueues(_transactionLedgerProvider.TransactionsLedger))
+        foreach (var queue in _queuesProvider.GetQueues())
         {
             _channel.QueueDeclare(
                 queue.Name,
@@ -89,7 +70,7 @@ public class RabbitMQSagaClient : ISagaClient
             {
                 _channel.QueueBind(
                     queue.Name,
-                    exchange,
+                    queue.Exchange,
                     queue.Name,
                     null);
             }
@@ -115,8 +96,7 @@ public class RabbitMQSagaClient : ISagaClient
 
         var consumers = _rabbitMqSagaConsumersFactory.Create(
             _channel,
-            orchestrator,
-            _transactionLedgerProvider.TransactionsLedger);
+            orchestrator);
 
         foreach (var consumer in consumers)
         {

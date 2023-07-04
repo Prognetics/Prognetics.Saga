@@ -1,4 +1,5 @@
-﻿using Prognetics.Saga.Core.Model;
+﻿using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 using RabbitMQ.Client;
@@ -10,22 +11,24 @@ public class RabbitMQConsumersFactory : IRabbitMQConsumersFactory
 {
     private readonly IRabbitMQConsumerFactory _rabbitMqSagaConsumerFactory;
     private readonly IRabbitMQDLXConsumerFactory _rabbitMqDLXConsumerFactory;
+    private readonly ITransactionLedgerAccessor _transactionLedgerAccessor;
     private readonly RabbitMQSagaOptions _options;
 
     public RabbitMQConsumersFactory(
         IRabbitMQConsumerFactory rabbitMqSagaConsumerFactory,
         IRabbitMQDLXConsumerFactory rabbitMqDLXConsumerFactory,
+        ITransactionLedgerAccessor transactionLedgerAccessor,
         RabbitMQSagaOptions options)
     {
         _rabbitMqSagaConsumerFactory = rabbitMqSagaConsumerFactory;
         _rabbitMqDLXConsumerFactory = rabbitMqDLXConsumerFactory;
+        _transactionLedgerAccessor = transactionLedgerAccessor;
         _options = options;
     }
 
     public IReadOnlyList<RabbitMQConsumer> Create(
         IModel channel,
-        ISagaOrchestrator sagaOrchestrator,
-        TransactionsLedger model)
+        ISagaOrchestrator sagaOrchestrator)
     {
         var consumer = _rabbitMqSagaConsumerFactory.Create(
             channel,
@@ -35,7 +38,7 @@ public class RabbitMQConsumersFactory : IRabbitMQConsumersFactory
             channel,
             sagaOrchestrator);
 
-        return model.Transactions
+        return _transactionLedgerAccessor.TransactionsLedger.Transactions
             .SelectMany(x => x.Steps)
             .Select(x => new RabbitMQConsumer
             {
