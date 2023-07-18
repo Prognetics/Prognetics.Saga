@@ -17,9 +17,10 @@ class TransactionBuilder : ITransactionBuilder
         return this;
     }
 
-    public Transaction Build()
+    public Transaction Build(string name)
         => new()
         {
+            Name = name,
             Steps = _steps.ToList(),
         };
 }
