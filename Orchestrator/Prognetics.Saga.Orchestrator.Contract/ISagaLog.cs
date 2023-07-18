@@ -1,6 +1,7 @@
+using Prognetics.Saga.Orchestrator.Contract.DTO;
 using System.Collections.Concurrent;
 
-namespace Prognetics.Saga.Orchestrator;
+namespace Prognetics.Saga.Orchestrator.Contract;
 public interface ISagaLog
 {
     Task<TransactionState?> GetState(string transactionId);
