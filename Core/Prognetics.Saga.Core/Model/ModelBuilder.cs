@@ -5,9 +5,8 @@ namespace Prognetics.Saga.Core.Model;
 public class ModelBuilder
 {
     private readonly List<Transaction> _transactions = new();
-
-    // todo rename
-    public ModelBuilder From(TransactionsLedger sagaModel)
+        
+    public IModelBuilder FromLedger(TransactionsLedger sagaModel)
     {
         _transactions.AddRange(sagaModel.Transactions.ToList());
         return this;
