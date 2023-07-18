@@ -1,4 +1,4 @@
-namespace Prognetics.Saga.Orchestrator;
+namespace Prognetics.Saga.Orchestrator.Contract.DTO;
 
 public readonly record struct Compensation(
     string TransactionId,

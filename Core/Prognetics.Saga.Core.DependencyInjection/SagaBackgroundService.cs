@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Prognetics.Saga.Core.Abstract;
-using Prognetics.Saga.Orchestrator;
+using Prognetics.Saga.Orchestrator.Contract;
 
 namespace Prognetics.Saga.Core.DependencyInjection;
 public class SagaBackgroundService : BackgroundService

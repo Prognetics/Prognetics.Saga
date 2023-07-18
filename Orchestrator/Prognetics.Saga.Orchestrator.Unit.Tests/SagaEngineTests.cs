@@ -1,6 +1,7 @@
 ﻿using NSubstitute;
 using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Core.Model;
+using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
 
 namespace Prognetics.Saga.Orchestrator.Unit.Tests;
