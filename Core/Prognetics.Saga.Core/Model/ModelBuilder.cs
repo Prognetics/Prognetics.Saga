@@ -6,7 +6,7 @@ public class ModelBuilder
 {
     private readonly List<Transaction> _transactions = new();
         
-    public IModelBuilder FromLedger(TransactionsLedger sagaModel)
+    public ModelBuilder FromLedger(TransactionsLedger sagaModel)
     {
         _transactions.AddRange(sagaModel.Transactions.ToList());
         return this;

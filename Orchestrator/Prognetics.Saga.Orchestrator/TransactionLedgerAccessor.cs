@@ -19,7 +19,7 @@ public class TransactionLedgerAccessor : IInitializableTransactionLedgerAccessor
             _sources.Select(s => s.GetModel(cancellation))))
             .Aggregate(
                 new ModelBuilder(),
-                (builder, model) => builder.From(model))
+                (builder, model) => builder.FromLedger(model))
             .Build();
     }
 
