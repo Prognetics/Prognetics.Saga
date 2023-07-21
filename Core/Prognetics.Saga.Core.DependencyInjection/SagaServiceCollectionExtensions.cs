@@ -25,7 +25,7 @@ public static partial class SagaServiceCollectionExtensions
         return serviceCollection;
     }
 
-    public static ISagaConfiguration AddModelSource<TSagaModelSource>(
+    public static ISagaConfiguration AddTransactionLedgerSource<TSagaModelSource>(
         this ISagaConfiguration configuration)
         where TSagaModelSource : class, ITransactionLedgerSource
     {
