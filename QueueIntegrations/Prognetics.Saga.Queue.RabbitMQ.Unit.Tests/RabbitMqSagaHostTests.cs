@@ -51,7 +51,6 @@ public class RabbitMQSagaHostTests
         _transactionLedgerAccessor.TransactionsLedger.Returns(_transactionLedger);
 
         _sut = new RabbitMQSagaClient(
-            _transactionLedgerAccessor,
             _connectionFactory,
             _sagaQueuesProvider,
             _consumersFactory,
