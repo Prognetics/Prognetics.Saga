@@ -1,4 +1,4 @@
-﻿namespace Prognetics.Saga.Orchestrator;
+﻿namespace Prognetics.Saga.Orchestrator.Contract;
 
 public interface ISagaHost : IDisposable
 {

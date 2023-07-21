@@ -13,8 +13,13 @@ public static partial class SagaServiceCollectionExtensions
         var configuration = new SagaConfiguration(serviceCollection);
         configure(configuration);
 
-        serviceCollection.AddScoped<ISagaOrchestratorFactory, SagaOrchestratorFactory>();
-        serviceCollection.AddScoped<ISagaHost, SagaHost>();
+        serviceCollection.AddSingleton<IInitializableTransactionLedgerAccessor, TransactionLedgerAccessor>();
+        serviceCollection.AddSingleton<ITransactionLedgerAccessor>(sp => sp.GetRequiredService<IInitializableTransactionLedgerAccessor>());
+        serviceCollection.AddSingleton<IStartableSagaOrchestrator, SagaOrchestrator>();
+        serviceCollection.AddSingleton<ISagaOrchestrator>(sp => sp.GetRequiredService<IStartableSagaOrchestrator>());
+        
+        serviceCollection.AddSingleton<ISagaEngine, SagaEngine>();
+        serviceCollection.AddSingleton<ISagaHost, SagaHost>();
 
         serviceCollection.AddHostedService<SagaBackgroundService>();
         return serviceCollection;

@@ -1,26 +1,37 @@
-﻿using Prognetics.Saga.Core.Model;
+﻿using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 
 namespace Prognetics.Saga.Orchestrator;
 
-public class SagaOrchestrator : ISagaOrchestrator
+public class SagaOrchestrator : IStartableSagaOrchestrator
 {
     private readonly IReadOnlyDictionary<string, string> _steps;
-    private readonly ConcurrentBag<ISagaSubscriber> _sagaSubscribers = new();
-    private readonly TransactionsLedger _sagaModel;
+    private ISagaSubscriber? _sagaSubscriber;
 
-    public TransactionsLedger Model => _sagaModel;
+    public bool IsStarted { get; private set; }
 
-    public SagaOrchestrator(TransactionsLedger sagaModel)
+
+    public SagaOrchestrator(ITransactionLedgerAccessor transactionLedgerAccessor)
     {
-        _sagaModel = sagaModel;
-        _steps = GetSteps();
+        _steps = GetSteps(transactionLedgerAccessor.TransactionsLedger);
+    }
+
+    public void Start(ISagaSubscriber sagaSubscriber)
+    {
+        _sagaSubscriber = sagaSubscriber;
     }
 
     public async Task Push(string queueName, InputMessage inputMessage)
     {
+        if (!IsStarted || _sagaSubscriber is null)
+        {
+            throw new InvalidOperationException("Orchestrator not started");
+        }
+
         if (!_steps.TryGetValue(queueName, out var nextStep))
         {
             throw new ArgumentException("Queue name not defined", nameof(queueName));
@@ -29,28 +40,19 @@ public class SagaOrchestrator : ISagaOrchestrator
         var outputMessage = new OutputMessage(
             inputMessage.TransactionId ?? Guid.NewGuid().ToString(),
             inputMessage.Payload);
-
-        await Parallel.ForEachAsync(
-            _sagaSubscribers,
-            (s, _) => new(s.OnMessage(
+        
+        await _sagaSubscriber.OnMessage(
                 nextStep,
-                outputMessage)));
+                outputMessage);
     }
 
-    public void Subscribe(ISagaSubscriber sagaSubscriber)
-    {
-        _sagaSubscribers.Add(sagaSubscriber);
-    }
-
-    private IReadOnlyDictionary<string, string> GetSteps()
-        => _sagaModel.Transactions
+    private IReadOnlyDictionary<string, string> GetSteps(TransactionsLedger transactionsLedger)
+        => transactionsLedger.Transactions
             .SelectMany(x => x.Steps)
             .ToDictionary(
                 x => x.EventName,
                 x => x.CompletionEventName);
 
     public void Dispose()
-    {
-        _sagaSubscribers.Clear();
-    }
+    { }
 }
