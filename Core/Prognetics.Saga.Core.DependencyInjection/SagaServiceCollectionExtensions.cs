@@ -27,9 +27,9 @@ public static partial class SagaServiceCollectionExtensions
 
     public static ISagaConfiguration AddModelSource<TSagaModelSource>(
         this ISagaConfiguration configuration)
-        where TSagaModelSource : class, IModelSource
+        where TSagaModelSource : class, ITransactionLedgerSource
     {
-        configuration.Services.AddScoped<IModelSource, TSagaModelSource>();
+        configuration.Services.AddScoped<ITransactionLedgerSource, TSagaModelSource>();
         return configuration;
     }
 

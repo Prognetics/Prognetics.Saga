@@ -18,7 +18,7 @@ namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
 /// </summary>
 public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixture>, IDisposable
 {
-    private const string _skipReason = "Unstable"; 
+    private const string _skipReason = "Unstable";
     private readonly RabbitMQContainerFixture _fixture;
 
     private readonly RabbitMQSagaOptions _options = new ();

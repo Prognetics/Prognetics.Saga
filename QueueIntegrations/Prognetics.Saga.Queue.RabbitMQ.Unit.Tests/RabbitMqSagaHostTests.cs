@@ -18,8 +18,8 @@ public class RabbitMQSagaHostTests
     private readonly IRabbitMQConnectionFactory _connectionFactory;
     private readonly IRabbitMQQueuesProvider _sagaQueuesProvider;
     private readonly IStartableSagaOrchestrator _sagaOrchestrator;
-    private readonly ITransactionLedgerAccessor _transactionLedgerProvider;
-    private readonly TransactionsLedger _model;
+    private readonly TransactionsLedger _transactionLedger;
+    private readonly ITransactionLedgerAccessor _transactionLedgerAccessor;
     private readonly IRabbitMQConsumersFactory _consumersFactory;
     private readonly ISagaSubscriber _subscriber;
     private readonly IBasicConsumer _basicConsumer;
@@ -34,10 +34,10 @@ public class RabbitMQSagaHostTests
         _connection = Substitute.For<IConnection>();
         _connectionFactory = Substitute.For<IRabbitMQConnectionFactory>();
         _sagaQueuesProvider = Substitute.For<IRabbitMQQueuesProvider>();
+        _sagaQueuesProvider = Substitute.For<IRabbitMQQueuesProvider>();
         _sagaOrchestrator = Substitute.For<IStartableSagaOrchestrator>();
-        _transactionLedgerProvider = Substitute.For<ITransactionLedgerAccessor>();
-        _model = new TransactionsLedger();
-        _transactionLedgerProvider.TransactionsLedger.Returns(_model);
+        _transactionLedger = new TransactionsLedger();
+        _transactionLedgerAccessor = Substitute.For<ITransactionLedgerAccessor>();
         _consumersFactory = Substitute.For<IRabbitMQConsumersFactory>();
         _subscriber = Substitute.For<ISagaSubscriber>();
         _basicConsumer = Substitute.For<IBasicConsumer>();
@@ -50,11 +50,12 @@ public class RabbitMQSagaHostTests
         _subscriberFactory.Create(_channel).Returns(_subscriber);
 
         _sut = new RabbitMQSagaClient(
-            _transactionLedgerProvider,
+            _transactionLedgerAccessor,
             _connectionFactory,
             _sagaQueuesProvider,
             _consumersFactory,
             _subscriberFactory,
+            _transactionLedgerAccessor,
             _options,
             _logger);
     }
@@ -68,7 +69,7 @@ public class RabbitMQSagaHostTests
             .Select(x => new RabbitMQQueue { Name = $"Queue{x}" })
             .ToList();
 
-        _sagaQueuesProvider.GetQueues(_model).Returns(queues);
+        _sagaQueuesProvider.GetQueues(_transactionLedger).Returns(queues);
 
         var consumers = Enumerable.Range(0, queuesCount)
 			.Select(x => new RabbitMQConsumer
@@ -122,7 +123,7 @@ public class RabbitMQSagaHostTests
 
         const string exchange = "saga";
 
-        _sagaQueuesProvider.GetQueues(_model).Returns(queues);
+        _sagaQueuesProvider.GetQueues(_transactionLedger).Returns(queues);
         _options.Exchange = exchange;
 
         var consumers = Enumerable.Range(0, queuesCount)

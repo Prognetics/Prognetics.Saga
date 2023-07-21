@@ -2,17 +2,17 @@
 
 namespace Prognetics.Saga.Core.Model;
 
-public class ModelBuilder
+public class TransactionLedgerBuilder
 {
     private readonly List<Transaction> _transactions = new();
         
-    public ModelBuilder FromLedger(TransactionsLedger sagaModel)
+    public TransactionLedgerBuilder FromLedger(TransactionsLedger sagaModel)
     {
         _transactions.AddRange(sagaModel.Transactions.ToList());
         return this;
     }
 
-    public ModelBuilder AddTransaction(string name, Action<ITransactionBuilder> builderAction)
+    public TransactionLedgerBuilder AddTransaction(string name, Action<ITransactionBuilder> builderAction)
     {
         var transactionBuilder = new TransactionBuilder();
         builderAction(transactionBuilder);

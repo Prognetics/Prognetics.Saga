@@ -6,15 +6,15 @@ namespace Prognetics.Saga.Queue.RabbitMQ.Consuming;
 
 public class RabbitMQConsumersFactory : IRabbitMQConsumersFactory
 {
-    private readonly IRabbitMQConsumerFactory _rabbitMqSagaConsumerFactory;
     private readonly ITransactionLedgerAccessor _transactionLedgerAccessor;
+    private readonly IRabbitMQConsumerFactory _rabbitMqSagaConsumerFactory;
 
     public RabbitMQConsumersFactory(
-        IRabbitMQConsumerFactory rabbitMqSagaConsumerFactory,
-        ITransactionLedgerAccessor transactionLedgerAccessor)
+        ITransactionLedgerAccessor transactionLedgerAccessor,
+        IRabbitMQConsumerFactory rabbitMqSagaConsumerFactory)
     {
-        _rabbitMqSagaConsumerFactory = rabbitMqSagaConsumerFactory;
         _transactionLedgerAccessor = transactionLedgerAccessor;
+        _rabbitMqSagaConsumerFactory = rabbitMqSagaConsumerFactory;
     }
 
     public IReadOnlyList<RabbitMQConsumer> Create(

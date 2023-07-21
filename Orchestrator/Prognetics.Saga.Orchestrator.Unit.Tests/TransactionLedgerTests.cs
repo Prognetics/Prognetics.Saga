@@ -12,15 +12,16 @@ public class TransactionLedgerTests
     [InlineData(new[] { 0, 1, 2 }, 1)]
     [InlineData(new[] { 1, 2, 3 }, 3)]
     public void ShouldReturnCorrectNumberOfTransactionsAndStepsFromAllSources(
-        int [] transactionsCountPerSource,
+        int[] transactionsCountPerSource,
         int stepsCountPerTransaction)
     {
         const string fromPrefix = nameof(fromPrefix);
         const string toPrefix = nameof(toPrefix);
         const string compensationPrefix = nameof(compensationPrefix);
 
-        var builder = new ModelBuilder();
-        for (int sourceNumber = 0; sourceNumber < transactionsCountPerSource.Length; sourceNumber++){
+        var builder = new TransactionLedgerBuilder();
+        for (int sourceNumber = 0; sourceNumber < transactionsCountPerSource.Length; sourceNumber++)
+        {
             var transactionsCount = transactionsCountPerSource[sourceNumber];
             Enumerable.Range(0, transactionsCount).ToList().ForEach(ti =>
                 builder.AddTransaction(
@@ -34,7 +35,7 @@ public class TransactionLedgerTests
         }
 
         var model = builder.Build();
-        
+
         Assert.NotNull(model);
 
         var allTransactionsCount = transactionsCountPerSource.Sum();

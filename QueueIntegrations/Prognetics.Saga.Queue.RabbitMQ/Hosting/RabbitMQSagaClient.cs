@@ -18,6 +18,7 @@ public class RabbitMQSagaClient : ISagaClient
     private readonly IRabbitMQQueuesProvider _queuesProvider;
     private readonly IRabbitMQConsumersFactory _rabbitMqSagaConsumersFactory;
     private readonly IRabbitMQSagaSubscriberFactory _sagaSubscriberFactory;
+    private readonly ITransactionLedgerAccessor _transactionLedgerAccessor;
     private readonly RabbitMQSagaOptions _options;
     private readonly ILogger<IRabbitMQSagaHost> _logger;
     private IConnection? _connection;
@@ -29,6 +30,7 @@ public class RabbitMQSagaClient : ISagaClient
         IRabbitMQQueuesProvider queuesProvider,
         IRabbitMQConsumersFactory rabbitMqSagaConsumersFactory,
         IRabbitMQSagaSubscriberFactory sagaSubscriberFactory,
+        ITransactionLedgerAccessor transactionLedgerAccessor,
         RabbitMQSagaOptions options,
         ILogger<IRabbitMQSagaHost> logger)
     {
@@ -36,6 +38,7 @@ public class RabbitMQSagaClient : ISagaClient
         _queuesProvider = queuesProvider;
         _rabbitMqSagaConsumersFactory = rabbitMqSagaConsumersFactory;
         _sagaSubscriberFactory = sagaSubscriberFactory;
+        _transactionLedgerAccessor = transactionLedgerAccessor;
         _options = options;
         _logger = logger;
         _rabbitMqConnectionFactory = rabbitMqConnectionFactory;
@@ -55,7 +58,7 @@ public class RabbitMQSagaClient : ISagaClient
             _channel.ExchangeDeclare(exchange, ExchangeType.Direct);
         }
 
-        foreach (var queue in _queuesProvider.GetQueues(_transactionLedgerProvider.TransactionsLedger))
+        foreach (var queue in _queuesProvider.GetQueues(_transactionLedgerAccessor.TransactionsLedger))
         {
             _channel.QueueDeclare(
                 queue.Name,
