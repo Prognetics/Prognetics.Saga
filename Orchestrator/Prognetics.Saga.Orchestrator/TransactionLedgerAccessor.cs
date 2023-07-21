@@ -6,9 +6,9 @@ namespace Prognetics.Saga.Orchestrator;
 public class TransactionLedgerAccessor : IInitializableTransactionLedgerAccessor
 {
     private TransactionsLedger? _sagaModel;
-    private readonly IEnumerable<IModelSource> _sources;
+    private readonly IEnumerable<ITransactionLedgerSource> _sources;
 
-    public TransactionLedgerAccessor(IEnumerable<IModelSource> sources)
+    public TransactionLedgerAccessor(IEnumerable<ITransactionLedgerSource> sources)
     {
         _sources = sources;
     }
@@ -16,9 +16,9 @@ public class TransactionLedgerAccessor : IInitializableTransactionLedgerAccessor
     public async Task Initialize(CancellationToken cancellation = default)
     {
         _sagaModel = (await Task.WhenAll(
-            _sources.Select(s => s.GetModel(cancellation))))
+            _sources.Select(s => s.GetTransactionLedger(cancellation))))
             .Aggregate(
-                new ModelBuilder(),
+                new TransactionLedgerBuilder(),
                 (builder, model) => builder.FromLedger(model))
             .Build();
     }
