@@ -3,7 +3,7 @@ using Prognetics.Saga.Core.Model;
 
 namespace Prognetics.Saga.Orchestrator.Unit.Tests;
 
-public class DelegateSagaModelSource : IModelSource
+public class DelegateSagaModelSource : ITransactionLedgerSource
 {
     private readonly Func<TransactionsLedger> _factory;
 
@@ -12,16 +12,16 @@ public class DelegateSagaModelSource : IModelSource
         _factory = factory;
     }
 
-    public DelegateSagaModelSource(Action<ModelBuilder> configure)
+    public DelegateSagaModelSource(Action<TransactionLedgerBuilder> configure)
     {
         _factory = () =>
         {
-            var builder = new ModelBuilder();
+            var builder = new TransactionLedgerBuilder();
             configure(builder);
             return builder.Build();
         };
     }
 
-    public Task<TransactionsLedger> GetModel(CancellationToken cancellation = default)
+    public Task<TransactionsLedger> GetTransactionLedger(CancellationToken cancellation = default)
         => Task.FromResult(_factory());
 }

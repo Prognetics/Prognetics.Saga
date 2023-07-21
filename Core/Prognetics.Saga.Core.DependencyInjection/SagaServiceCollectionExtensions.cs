@@ -13,7 +13,7 @@ public static partial class SagaServiceCollectionExtensions
         var configuration = new SagaConfiguration(serviceCollection);
         configure(configuration);
 
-        serviceCollection.AddScoped<ISagaOrchestratorFactory, SagaOrchestratorFactory>();
+        serviceCollection.AddScoped<ITransactionLedgerAccessor, TransactionLedgerAccessor>();
         serviceCollection.AddScoped<ISagaHost, SagaHost>();
 
         serviceCollection.AddHostedService<SagaBackgroundService>();
@@ -22,9 +22,9 @@ public static partial class SagaServiceCollectionExtensions
 
     public static ISagaConfiguration AddModelSource<TSagaModelSource>(
         this ISagaConfiguration configuration)
-        where TSagaModelSource : class, IModelSource
+        where TSagaModelSource : class, ITransactionLedgerSource
     {
-        configuration.Services.AddScoped<IModelSource, TSagaModelSource>();
+        configuration.Services.AddScoped<ITransactionLedgerSource, TSagaModelSource>();
         return configuration;
     }
 

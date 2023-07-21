@@ -1,4 +1,5 @@
-﻿using Prognetics.Saga.Core.Model;
+﻿using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
 using System.Collections.Concurrent;
@@ -9,14 +10,11 @@ public class SagaOrchestrator : ISagaOrchestrator
 {
     private readonly IReadOnlyDictionary<string, string> _steps;
     private readonly ConcurrentBag<ISagaSubscriber> _sagaSubscribers = new();
-    private readonly TransactionsLedger _sagaModel;
 
-    public TransactionsLedger Model => _sagaModel;
 
-    public SagaOrchestrator(TransactionsLedger sagaModel)
+    public SagaOrchestrator(ITransactionLedgerAccessor transactionLedgerAccessor)
     {
-        _sagaModel = sagaModel;
-        _steps = GetSteps();
+        _steps = GetSteps(transactionLedgerAccessor.TransactionsLedger);
     }
 
     public async Task Push(string queueName, InputMessage inputMessage)
@@ -42,8 +40,8 @@ public class SagaOrchestrator : ISagaOrchestrator
         _sagaSubscribers.Add(sagaSubscriber);
     }
 
-    private IReadOnlyDictionary<string, string> GetSteps()
-        => _sagaModel.Transactions
+    private IReadOnlyDictionary<string, string> GetSteps(TransactionsLedger transactionsLedger)
+        => transactionsLedger.Transactions
             .SelectMany(x => x.Steps)
             .ToDictionary(
                 x => x.EventName,
