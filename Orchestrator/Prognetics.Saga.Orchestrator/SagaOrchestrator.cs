@@ -1,56 +1,39 @@
-﻿using Prognetics.Saga.Core.Abstract;
-using Prognetics.Saga.Core.Model;
-using Prognetics.Saga.Orchestrator.Contract;
+﻿using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
 
 namespace Prognetics.Saga.Orchestrator;
 
 public class SagaOrchestrator : IStartableSagaOrchestrator
 {
-    private readonly IReadOnlyDictionary<string, string> _steps;
+    private readonly ISagaEngine _engine;
     private ISagaSubscriber? _sagaSubscriber;
 
     public bool IsStarted { get; private set; }
 
-
-    public SagaOrchestrator(ITransactionLedgerAccessor transactionLedgerAccessor)
+    public SagaOrchestrator(ISagaEngine engine)
     {
-        _steps = GetSteps(transactionLedgerAccessor.TransactionsLedger);
+        _engine = engine;
     }
 
     public void Start(ISagaSubscriber sagaSubscriber)
     {
         _sagaSubscriber = sagaSubscriber;
+        IsStarted = true;
     }
 
-    public async Task Push(string queueName, InputMessage inputMessage)
+    public async Task Push(string eventName, InputMessage inputMessage)
     {
         if (!IsStarted || _sagaSubscriber is null)
         {
-            throw new InvalidOperationException("Orchestrator not started");
+            throw new InvalidOperationException("Orchestrator have not been started");
         }
 
-        if (!_steps.TryGetValue(queueName, out var nextStep))
+        var output = await _engine.Process(new(eventName, inputMessage));
+        if (output.HasValue)
         {
-            throw new ArgumentException("Queue name not defined", nameof(queueName));
+            await _sagaSubscriber.OnMessage(
+                output.Value.EventName,
+                output.Value.Message);
         }
-
-        var outputMessage = new OutputMessage(
-            inputMessage.TransactionId ?? Guid.NewGuid().ToString(),
-            inputMessage.Payload);
-        
-        await _sagaSubscriber.OnMessage(
-                nextStep,
-                outputMessage);
     }
-
-    private IReadOnlyDictionary<string, string> GetSteps(TransactionsLedger transactionsLedger)
-        => transactionsLedger.Transactions
-            .SelectMany(x => x.Steps)
-            .ToDictionary(
-                x => x.EventName,
-                x => x.CompletionEventName);
-
-    public void Dispose()
-    { }
 }

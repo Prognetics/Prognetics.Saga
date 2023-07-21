@@ -21,7 +21,6 @@ public class SagaEngine : ISagaEngine
 
         if (stepRecord is null || transactionModel is null)
         {
-            // TODO: Log error
             return Task.FromResult((EngineOutput?)null);
         }
 
