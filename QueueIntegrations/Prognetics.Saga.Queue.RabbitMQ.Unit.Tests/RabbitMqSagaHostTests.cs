@@ -48,6 +48,7 @@ public class RabbitMQSagaHostTests
         _connectionFactory.Create().Returns(_connection);
         _connection.CreateModel().Returns(_channel);
         _subscriberFactory.Create(_channel).Returns(_subscriber);
+        _transactionLedgerAccessor.TransactionsLedger.Returns(_transactionLedger);
 
         _sut = new RabbitMQSagaClient(
             _transactionLedgerAccessor,
