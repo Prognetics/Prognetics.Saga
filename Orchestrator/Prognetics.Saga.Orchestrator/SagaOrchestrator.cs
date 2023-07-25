@@ -44,7 +44,7 @@ public class SagaOrchestrator : ISagaOrchestrator
         => transactionsLedger.Transactions
             .SelectMany(x => x.Steps)
             .ToDictionary(
-                x => x.EventName,
+                x => x.NextEventName,
                 x => x.CompletionEventName);
 
     public void Dispose()

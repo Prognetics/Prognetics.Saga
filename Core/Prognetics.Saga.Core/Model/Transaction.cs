@@ -6,10 +6,10 @@ public class Transaction
 
     public IReadOnlyList<Step> Steps { get; init; } = new List<Step>();
 
-    public StepRecord? GetStepByEventName(string eventName)
+    public StepRecord? GetStepByCompletionEventName(string completionEventName)
         => Steps
             .Select((x, i) => new StepRecord(i, x))
-            .SingleOrDefault(x => x.Step.EventName.ToLowerInvariant() == eventName.ToLowerInvariant());
+            .SingleOrDefault(x => x.Step.CompletionEventName.ToLowerInvariant() == completionEventName.ToLowerInvariant());
     
     public Step? GetStepByOrderNumber(int orderNumber)
         => orderNumber < Steps.Count ? Steps[orderNumber] : null;    

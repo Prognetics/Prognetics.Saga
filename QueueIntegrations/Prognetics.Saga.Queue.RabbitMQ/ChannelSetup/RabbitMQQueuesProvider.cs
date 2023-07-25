@@ -11,8 +11,8 @@ public class RabbitMQQueuesProvider : IRabbitMQQueuesProvider
                 new List<RabbitMQQueue>(),
                 (acc, step) =>
                 {
-                    acc.Add(new RabbitMQQueue { Name = step.EventName });
                     acc.Add(new RabbitMQQueue { Name = step.CompletionEventName });
+                    acc.Add(new RabbitMQQueue { Name = step.NextEventName });
                     return acc;
                 });
 }
