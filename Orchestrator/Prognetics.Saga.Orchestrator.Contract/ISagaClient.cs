@@ -1,8 +1,13 @@
-﻿namespace Prognetics.Saga.Orchestrator.Contract;
+﻿using Prognetics.Saga.Core.Model;
+
+namespace Prognetics.Saga.Orchestrator.Contract;
 
 public interface ISagaClient : IDisposable
 {
-    Task Start(
-        ISagaOrchestrator orchestrator,
-        CancellationToken cancellationToken = default);
+    Task Initialize();
+
+    Task Consume(ISagaOrchestrator orchestrator);
+
+    Task<ISagaSubscriber> GetSubscriber();
+
 }

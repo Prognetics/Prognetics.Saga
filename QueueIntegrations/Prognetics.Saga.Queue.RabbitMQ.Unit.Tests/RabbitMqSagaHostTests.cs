@@ -17,7 +17,7 @@ public class RabbitMQSagaHostTests
     private readonly IModel _channel;
     private readonly IRabbitMQConnectionFactory _connectionFactory;
     private readonly IRabbitMQQueuesProvider _sagaQueuesProvider;
-    private readonly ISagaOrchestrator _sagaOrchestrator;
+    private readonly IStartableSagaOrchestrator _sagaOrchestrator;
     private readonly TransactionsLedger _transactionLedger;
     private readonly ITransactionLedgerAccessor _transactionLedgerAccessor;
     private readonly IRabbitMQConsumersFactory _consumersFactory;
@@ -34,10 +34,10 @@ public class RabbitMQSagaHostTests
         _connection = Substitute.For<IConnection>();
         _connectionFactory = Substitute.For<IRabbitMQConnectionFactory>();
         _sagaQueuesProvider = Substitute.For<IRabbitMQQueuesProvider>();
-        _sagaOrchestrator = Substitute.For<ISagaOrchestrator>();
+        _sagaQueuesProvider = Substitute.For<IRabbitMQQueuesProvider>();
+        _sagaOrchestrator = Substitute.For<IStartableSagaOrchestrator>();
         _transactionLedger = new TransactionsLedger();
         _transactionLedgerAccessor = Substitute.For<ITransactionLedgerAccessor>();
-        _transactionLedgerAccessor.TransactionsLedger.Returns(_transactionLedger);
         _consumersFactory = Substitute.For<IRabbitMQConsumersFactory>();
         _subscriber = Substitute.For<ISagaSubscriber>();
         _basicConsumer = Substitute.For<IBasicConsumer>();
@@ -48,6 +48,7 @@ public class RabbitMQSagaHostTests
         _connectionFactory.Create().Returns(_connection);
         _connection.CreateModel().Returns(_channel);
         _subscriberFactory.Create(_channel).Returns(_subscriber);
+        _transactionLedgerAccessor.TransactionsLedger.Returns(_transactionLedger);
 
         _sut = new RabbitMQSagaClient(
             _connectionFactory,
@@ -60,7 +61,7 @@ public class RabbitMQSagaHostTests
     }
 
     [Fact]
-    public void WhenHostingIsCorrectlyConfigured_ThenShouldConfigureChannelCorrectly()
+    public async Task WhenHostingIsCorrectlyConfigured_ThenShouldConfigureChannelCorrectly()
     {
         // Arrange
         const int queuesCount = 10;
@@ -82,7 +83,8 @@ public class RabbitMQSagaHostTests
 		var source = new CancellationTokenSource();
 
 		// Act
-		_sut.Start(_sagaOrchestrator);
+        await _sut.Initialize();
+        await _sut.Consume(_sagaOrchestrator);
 
         _channel.Received(queuesCount).QueueDeclare(
             Arg.Is<string>(x => queues.Any(q => q.Name == x)),
@@ -107,11 +109,11 @@ public class RabbitMQSagaHostTests
 			false,
 			null);
 
-		_sagaOrchestrator.Received().Subscribe(_subscriber);
+        Assert.Equal(_subscriber, await _sut.GetSubscriber());
 	}
 
     [Fact]
-    public void WhenExchageIsSet_ThenShouldDeclareQueuesCorrectly()
+    public async Task WhenExchageIsSet_ThenShouldDeclareQueuesCorrectly()
     {
         // Arrange
         const int queuesCount = 10;
@@ -132,11 +134,15 @@ public class RabbitMQSagaHostTests
             })
             .ToList();
 
-        _consumersFactory.Create(_channel, _sagaOrchestrator).Returns(consumers);
-        var source = new CancellationTokenSource();
+        _consumersFactory
+            .Create(
+                _channel,
+                _sagaOrchestrator)
+            .Returns(consumers);
 
         // Act
-        _sut.Start(_sagaOrchestrator);
+        await _sut.Initialize();
+        await _sut.Consume(_sagaOrchestrator);
 
         _channel.Received(queuesCount).QueueDeclare(
             Arg.Is<string>(x => queues.Any(q => q.Name == x)),
@@ -162,6 +168,6 @@ public class RabbitMQSagaHostTests
             false,
             null);
 
-        _sagaOrchestrator.Received().Subscribe(_subscriber);
+        Assert.Equal(_subscriber, await _sut.GetSubscriber());
     }
 }

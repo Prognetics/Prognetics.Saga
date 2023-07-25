@@ -31,7 +31,6 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
 
     private readonly string _eventName;
     private readonly string _completionEventName;
-    private readonly string _compensationEventName;
     private const string _exchange = "saga";
     private readonly IServiceCollection _serviceCollection;
     private readonly IServiceProvider _serviceProvider;
@@ -68,7 +67,6 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
 
         _eventName = "Step1";
         _completionEventName = "Step1Completion";
-        _compensationEventName = "Step1Compensation";
 
         _sut = (_serviceProvider.GetRequiredService<IHostedService>() as SagaBackgroundService)!;
     }
@@ -77,9 +75,8 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
     public async Task WhenValidMessageWasSent_ThenAppropriateMessageShouldBeFetched()
     {
         var data = new TestData("Value");
-        var messageTransactionId = Guid.NewGuid().ToString();
         var inputMessage = new InputMessage(
-            messageTransactionId,
+            null,
             data,
             null);
 
@@ -102,7 +99,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
         Assert.NotNull(result);
         var message = JsonSerializer.Deserialize<OutputMessage>(Encoding.UTF8.GetString(result.Body.Span));
         Assert.NotNull(message);
-        Assert.Equal(messageTransactionId, message?.TransactionId);
+        Assert.NotNull(message?.TransactionId);
         Assert.Equal(data, ((JsonElement)message!.Payload).Deserialize<TestData>());
     }
 

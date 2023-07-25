@@ -1,54 +1,39 @@
-﻿using Prognetics.Saga.Core.Abstract;
-using Prognetics.Saga.Core.Model;
-using Prognetics.Saga.Orchestrator.Contract;
+﻿using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
-using System.Collections.Concurrent;
 
 namespace Prognetics.Saga.Orchestrator;
 
-public class SagaOrchestrator : ISagaOrchestrator
+public class SagaOrchestrator : IStartableSagaOrchestrator
 {
-    private readonly IReadOnlyDictionary<string, string> _steps;
-    private readonly ConcurrentBag<ISagaSubscriber> _sagaSubscribers = new();
+    private readonly ISagaEngine _engine;
+    private ISagaSubscriber? _sagaSubscriber;
 
+    public bool IsStarted { get; private set; }
 
-    public SagaOrchestrator(ITransactionLedgerAccessor transactionLedgerAccessor)
+    public SagaOrchestrator(ISagaEngine engine)
     {
-        _steps = GetSteps(transactionLedgerAccessor.TransactionsLedger);
+        _engine = engine;
     }
 
-    public async Task Push(string queueName, InputMessage inputMessage)
+    public void Start(ISagaSubscriber sagaSubscriber)
     {
-        if (!_steps.TryGetValue(queueName, out var nextStep))
+        _sagaSubscriber = sagaSubscriber;
+        IsStarted = true;
+    }
+
+    public async Task Push(string eventName, InputMessage inputMessage)
+    {
+        if (!IsStarted || _sagaSubscriber is null)
         {
-            throw new ArgumentException("Queue name not defined", nameof(queueName));
+            throw new InvalidOperationException("Orchestrator have not been started");
         }
 
-        var outputMessage = new OutputMessage(
-            inputMessage.TransactionId ?? Guid.NewGuid().ToString(),
-            inputMessage.Payload);
-
-        await Parallel.ForEachAsync(
-            _sagaSubscribers,
-            (s, _) => new(s.OnMessage(
-                nextStep,
-                outputMessage)));
-    }
-
-    public void Subscribe(ISagaSubscriber sagaSubscriber)
-    {
-        _sagaSubscribers.Add(sagaSubscriber);
-    }
-
-    private IReadOnlyDictionary<string, string> GetSteps(TransactionsLedger transactionsLedger)
-        => transactionsLedger.Transactions
-            .SelectMany(x => x.Steps)
-            .ToDictionary(
-                x => x.NextEventName,
-                x => x.CompletionEventName);
-
-    public void Dispose()
-    {
-        _sagaSubscribers.Clear();
+        var output = await _engine.Process(new(eventName, inputMessage));
+        if (output.HasValue)
+        {
+            await _sagaSubscriber.OnMessage(
+                output.Value.EventName,
+                output.Value.Message);
+        }
     }
 }

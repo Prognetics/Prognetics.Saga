@@ -1,4 +1,4 @@
-﻿using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Core.Model;
 
 namespace Prognetics.Saga.Orchestrator;
@@ -17,7 +17,7 @@ public class TransactionLedgerAccessor : IInitializableTransactionLedgerAccessor
     {
         _sagaModel = (await Task.WhenAll(
             _sources.Select(s => s.GetTransactionLedger(cancellation))))
-        .Aggregate(
+            .Aggregate(
                 new TransactionLedgerBuilder(),
                 (builder, model) => builder.FromLedger(model))
             .Build();
