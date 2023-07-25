@@ -1,14 +1,19 @@
-﻿using Prognetics.Saga.Orchestrator.Contract;
+﻿using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Orchestrator.Contract;
 using RabbitMQ.Client;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Consuming;
 
 public class RabbitMQConsumersFactory : IRabbitMQConsumersFactory
 {
+    private readonly ITransactionLedgerAccessor _transactionLedgerAccessor;
     private readonly IRabbitMQConsumerFactory _rabbitMqSagaConsumerFactory;
 
-    public RabbitMQConsumersFactory(IRabbitMQConsumerFactory rabbitMqSagaConsumerFactory)
+    public RabbitMQConsumersFactory(
+        ITransactionLedgerAccessor transactionLedgerAccessor,
+        IRabbitMQConsumerFactory rabbitMqSagaConsumerFactory)
     {
+        _transactionLedgerAccessor = transactionLedgerAccessor;
         _rabbitMqSagaConsumerFactory = rabbitMqSagaConsumerFactory;
     }
 
@@ -20,11 +25,11 @@ public class RabbitMQConsumersFactory : IRabbitMQConsumersFactory
             channel,
             sagaOrchestrator);
 
-        return sagaOrchestrator.Model.Transactions
+        return _transactionLedgerAccessor.TransactionsLedger.Transactions
             .SelectMany(x => x.Steps)
             .Select(x => new RabbitMQConsumer
             {
-                Queue = x.EventName,
+                Queue = x.CompletionEventName,
                 BasicConsumer = consumer
             })
             .ToList();

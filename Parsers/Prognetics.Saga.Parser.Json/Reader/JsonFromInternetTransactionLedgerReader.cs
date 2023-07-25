@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Prognetics.Saga.Parser.Json.Reader
 {
-    public class JsonFromInternetTransactionLedgerReader : IModelSource
+    public class JsonFromInternetTransactionLedgerReader : ITransactionLedgerSource
     {
         private readonly ReaderConfiguration _readerConfiguration;
 
@@ -14,7 +14,7 @@ namespace Prognetics.Saga.Parser.Json.Reader
             _readerConfiguration = readerConfiguration;
         }
 
-        public async Task<TransactionsLedger> GetModel(CancellationToken cancellation = default)
+        public async Task<TransactionsLedger> GetTransactionLedger(CancellationToken cancellation = default)
         {
             using var client = new HttpClient();
             var fileStream = await client.GetStreamAsync(_readerConfiguration.Path);

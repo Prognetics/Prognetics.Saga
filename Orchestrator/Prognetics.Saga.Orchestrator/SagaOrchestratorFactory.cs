@@ -1,31 +1,29 @@
 ﻿using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Core.Model;
-using Prognetics.Saga.Orchestrator.Contract;
 
 namespace Prognetics.Saga.Orchestrator;
 
-public class SagaOrchestratorFactory : ISagaOrchestratorFactory
+public class TransactionLedgerAccessor : IInitializableTransactionLedgerAccessor
 {
-    private readonly IReadOnlyList<IModelSource> _sources;
+    private TransactionsLedger? _sagaModel;
+    private readonly IEnumerable<ITransactionLedgerSource> _sources;
 
-    public SagaOrchestratorFactory(IEnumerable<IModelSource> sources)
+    public TransactionLedgerAccessor(IEnumerable<ITransactionLedgerSource> sources)
     {
-        _sources = sources.ToList();
+        _sources = sources;
     }
 
-    public async Task<ISagaOrchestrator> Create(CancellationToken cancellation)
+    public async Task Initialize(CancellationToken cancellation = default)
     {
-        var builder = new ModelBuilder();
-
-        var models = _sources
-            .Select(s => s.GetModel())
-            .ToList();
-
-        foreach (var model in models)
-        {
-            builder.FromLedger(await model);
-        }
-
-        return new SagaOrchestrator(builder.Build());
+        _sagaModel = (await Task.WhenAll(
+            _sources.Select(s => s.GetTransactionLedger(cancellation))))
+        .Aggregate(
+                new TransactionLedgerBuilder(),
+                (builder, model) => builder.FromLedger(model))
+            .Build();
     }
+
+    public TransactionsLedger TransactionsLedger
+        => _sagaModel
+        ?? throw new InvalidOperationException("Transaction ledger has not been initialized");
 }

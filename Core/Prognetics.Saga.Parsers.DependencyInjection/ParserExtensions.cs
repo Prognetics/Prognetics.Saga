@@ -15,9 +15,9 @@ namespace Prognetics.Saga.Parsers.DependencyInjection
             configuration.Services.Configure(configureOptions);
             configuration.Services.AddTransient(x => x.GetRequiredService<IOptions<ModelSourceOptions>>().Value);
                          
-            configuration.Services.AddSingleton<IEnumerable<IModelSource>>(provider =>
+            configuration.Services.AddSingleton<IEnumerable<ITransactionLedgerSource>>(provider =>
             {
-                var result = new List<IModelSource>();
+                var result = new List<ITransactionLedgerSource>();
                 var options = provider.GetRequiredService<ModelSourceOptions>();
 
                 foreach (var confirguration in options.Configurations)
@@ -28,7 +28,7 @@ namespace Prognetics.Saga.Parsers.DependencyInjection
 
                     if (parser != null)
                     {
-                        result.Add((IModelSource)parser);
+                        result.Add((ITransactionLedgerSource)parser);
                     }
                 }
 
