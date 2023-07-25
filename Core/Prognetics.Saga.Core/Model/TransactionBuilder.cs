@@ -6,12 +6,15 @@ class TransactionBuilder : ITransactionBuilder
 {
     private readonly List<Step> _steps = new();
 
-    public ITransactionBuilder AddStep(string eventName, string completionEventName, string compensationEventName)
+    public ITransactionBuilder AddStep(
+        string completionEventName,
+        string nextEventName,
+        string compensationEventName)
     {
         _steps.Add(new Step
         {
-            EventName = eventName,
             CompletionEventName = completionEventName,
+            NextEventName = nextEventName,
             CompensationEventName= compensationEventName
         });
         return this;

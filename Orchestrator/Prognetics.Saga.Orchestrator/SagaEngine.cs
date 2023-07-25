@@ -16,8 +16,8 @@ public class SagaEngine : ISagaEngine
     public Task<EngineOutput?> Process(EngineInput input)
     {
         var transactionLedger = _transactionLedgerAccessor.TransactionsLedger;
-        var transactionModel = transactionLedger.GetTransactionByEventName(input.EventName);
-        var stepRecord = transactionModel?.GetStepByEventName(input.EventName);
+        var transactionModel = transactionLedger.GetTransactionByCompletionEventName(input.EventName);
+        var stepRecord = transactionModel?.GetStepByCompletionEventName(input.EventName);
 
         if (stepRecord is null || transactionModel is null)
         {
