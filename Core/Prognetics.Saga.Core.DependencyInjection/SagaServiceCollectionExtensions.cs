@@ -13,6 +13,9 @@ public static partial class SagaServiceCollectionExtensions
         var configuration = new SagaConfiguration(serviceCollection);
         configure(configuration);
 
+        serviceCollection
+            .AddOptions<SagaLogOptions>()
+            .BindConfiguration("Saga.Log");
         serviceCollection.AddSingleton<IInitializableTransactionLedgerAccessor, TransactionLedgerAccessor>();
         serviceCollection.AddSingleton<ITransactionLedgerAccessor>(sp => sp.GetRequiredService<IInitializableTransactionLedgerAccessor>());
         serviceCollection.AddSingleton<IStartableSagaOrchestrator, SagaOrchestrator>();

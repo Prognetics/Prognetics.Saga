@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
 using Prognetics.Saga.Parsers.DependencyInjection;
 using Prognetics.Saga.Parsers.Core.Model;
+using Microsoft.Extensions.Configuration;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
 /// <summary>
@@ -18,7 +19,7 @@ namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
 /// </summary>
 public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixture>, IDisposable
 {
-    private const string _skipReason = "Unstable";
+    private const string _skipReason = null;
     private readonly RabbitMQContainerFixture _fixture;
 
     private readonly RabbitMQSagaOptions _options = new ();
@@ -60,8 +61,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
                         }
                     };
                 })
-                .UseRabbitMQ(_options));                
-
+                .UseRabbitMQ(_options));
 
         _serviceProvider = _serviceCollection.BuildServiceProvider();
 
