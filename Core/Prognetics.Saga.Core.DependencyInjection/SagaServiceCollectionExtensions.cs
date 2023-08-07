@@ -5,6 +5,7 @@ using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator;
 using Prognetics.Saga.Orchestrator.Contract;
+using Prognetics.Saga.Orchestrator.SagaLog;
 
 namespace Prognetics.Saga.Core.DependencyInjection;
 public static partial class SagaServiceCollectionExtensions
@@ -41,6 +42,7 @@ public static partial class SagaServiceCollectionExtensions
             .AddTransient(x => x.GetRequiredService<IOptions<MongoDbSagaLogOptions>>().Value)
             .AddSingleton<IMongoClient>(x => new MongoClient(
                 x.GetRequiredService<MongoDbSagaLogOptions>().ConnectionString))
+            .AddSingleton<MongoDbCompensationStore>()
             .AddSingleton<MongoDbSagaLog>();
 
         return configuration;

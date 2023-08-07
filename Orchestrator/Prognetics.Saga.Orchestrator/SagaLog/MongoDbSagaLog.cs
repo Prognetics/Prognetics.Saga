@@ -3,7 +3,7 @@ using MongoDB.Driver.Linq;
 using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Core.Model;
 
-namespace Prognetics.Saga.Orchestrator;
+namespace Prognetics.Saga.Orchestrator.SagaLog;
 public class MongoDbSagaLog : ISagaLog
 {
     private readonly IMongoCollection<TransactionLog> _transactionLogs;
@@ -14,7 +14,7 @@ public class MongoDbSagaLog : ISagaLog
     {
         _transactionLogs = mongoClient
             .GetDatabase(options.DatabaseName)
-            .GetCollection<TransactionLog>(options.CollectionName);
+            .GetCollection<TransactionLog>(options.TransactionLogCollectionName);
     }
 
     public async Task AddTransaction(

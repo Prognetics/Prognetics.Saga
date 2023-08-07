@@ -4,5 +4,6 @@ public class MongoDbSagaLogOptions
 {
     public string ConnectionString { get; set; } = string.Empty;
     public string DatabaseName { get; set; } = "sagalog";
-    public string CollectionName { get; set; } = "transactionLog";
+    public string TransactionLogCollectionName { get; set; } = "transactionLogs";
+    public string CompensationCollectionName { get; set; } = "compensations";
 }
