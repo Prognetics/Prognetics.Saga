@@ -1,9 +1,8 @@
-﻿namespace Prognetics.Saga.Orchestrator.Contract.DTO;
+﻿namespace Prognetics.Saga.Core.Model;
 
 public record TransactionLog
 {
-    public long Id { get; }
     public required string TransactionId { get; init; }
     public required TransactionState State { get; init; }
-    public string? CompletionEvent { get; init; }
+    public string? LastCompletionEvent { get; init; }
 }

@@ -1,41 +1,44 @@
-﻿using Microsoft.Extensions.Options;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-using Prognetics.Saga.Orchestrator.Contract;
-using Prognetics.Saga.Orchestrator.Contract.DTO;
+using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Core.Model;
 
 namespace Prognetics.Saga.Orchestrator;
-internal class MongoDbSagaLog : ISagaLog
+public class MongoDbSagaLog : ISagaLog
 {
-    private const string _transactionStatesCollectionName = "transactionLog";
-    private readonly IMongoDatabase _mongoClient;
+    private readonly IMongoCollection<TransactionLog> _transactionLogs;
 
-    public MongoDbSagaLog(IOptions<SagaLogOptions> sagaLogOptions)
+    public MongoDbSagaLog(
+        IMongoClient mongoClient,
+        MongoDbSagaLogOptions options)
     {
-        _mongoClient = new MongoClient(sagaLogOptions.Value.ConnectionString)
-            .GetDatabase(sagaLogOptions.Value.DatabaseName);
+        _transactionLogs = mongoClient
+            .GetDatabase(options.DatabaseName)
+            .GetCollection<TransactionLog>(options.CollectionName);
     }
 
-    public async Task<TransactionLog> GetTransactionState(
-        string transactionId,
-        CancellationToken cancellationToken = default)
-        => await _mongoClient
-            .GetCollection<TransactionLog>(_transactionStatesCollectionName)
-            .AsQueryable()
-            .Where(x => x.TransactionId == transactionId)
-            .OrderByDescending(x => x.Id)
-            .FirstOrDefaultAsync(cancellationToken);
-
-    public async Task SaveTransactionState(
+    public async Task AddTransaction(
         TransactionLog transactionLog,
         CancellationToken cancellationToken = default)
-        => await _mongoClient
-            .GetCollection<TransactionLog>(_transactionStatesCollectionName)
+        => await _transactionLogs
             .InsertOneAsync(transactionLog, cancellationToken: cancellationToken);
-}
 
-public class SagaLogOptions
-{
-    public string ConnectionString { get; set; } = string.Empty;
-    public string DatabaseName { get; set; } = "sagalog";
+    public async Task<TransactionLog> GetTransaction(
+        string transactionId,
+        CancellationToken cancellationToken = default)
+        => await _transactionLogs
+            .Find(Builders<TransactionLog>.Filter.Eq(x => x.TransactionId, transactionId))
+            .SingleOrDefaultAsync(cancellationToken);
+
+    public async Task UpdateTransaction(
+        TransactionLog transactionLog,
+        CancellationToken cancellationToken = default)
+        => await _transactionLogs
+            .FindOneAndUpdateAsync(
+                Builders<TransactionLog>.Filter
+                    .Eq(x => x.TransactionId, transactionLog.TransactionId),
+                Builders<TransactionLog>.Update
+                    .Set(x => x.LastCompletionEvent, transactionLog.LastCompletionEvent)
+                    .Set(x => x.State, transactionLog.State),
+                cancellationToken: cancellationToken);
 }

@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator;
 using Prognetics.Saga.Orchestrator.Contract;
 
@@ -13,9 +16,6 @@ public static partial class SagaServiceCollectionExtensions
         var configuration = new SagaConfiguration(serviceCollection);
         configure(configuration);
 
-        serviceCollection
-            .AddOptions<SagaLogOptions>()
-            .BindConfiguration("Saga.Log");
         serviceCollection.AddSingleton<IInitializableTransactionLedgerAccessor, TransactionLedgerAccessor>();
         serviceCollection.AddSingleton<ITransactionLedgerAccessor>(sp => sp.GetRequiredService<IInitializableTransactionLedgerAccessor>());
         serviceCollection.AddSingleton<IStartableSagaOrchestrator, SagaOrchestrator>();
@@ -26,6 +26,24 @@ public static partial class SagaServiceCollectionExtensions
 
         serviceCollection.AddHostedService<SagaBackgroundService>();
         return serviceCollection;
+    }
+
+    public static ISagaConfiguration AddMongoDbSagaLog(
+        this ISagaConfiguration configuration,
+        Action<MongoDbSagaLogOptions> configure)
+    {
+        configuration.Services
+            .AddOptions<MongoDbSagaLogOptions>()
+            .BindConfiguration("Saga.Log")
+            .Configure(configure);
+
+        configuration.Services
+            .AddTransient(x => x.GetRequiredService<IOptions<MongoDbSagaLogOptions>>().Value)
+            .AddSingleton<IMongoClient>(x => new MongoClient(
+                x.GetRequiredService<MongoDbSagaLogOptions>().ConnectionString))
+            .AddSingleton<MongoDbSagaLog>();
+
+        return configuration;
     }
 
     public static ISagaConfiguration AddTransactionLedgerSource<TSagaModelSource>(

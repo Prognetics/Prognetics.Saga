@@ -1,9 +1,8 @@
-namespace Prognetics.Saga.Orchestrator.Contract.DTO;
+namespace Prognetics.Saga.Core.Model;
 
 public enum TransactionState
 {
     Active,
-    Rollback,
     Finished,
     Failed,
 }
