@@ -6,8 +6,3 @@ public record TransactionLog
     public required TransactionState State { get; init; }
     public string? LastCompletionEvent { get; init; }
 }
-
-public record CompensationRow(
-    string TransactionId,
-    string CompensationEvent,
-    object Compensation);
