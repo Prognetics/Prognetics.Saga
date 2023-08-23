@@ -30,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Prognetics.Saga.Core.DependencyInjection\Prognetics.Saga.Core.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\Parsers\Prognetics.Saga.Parser.Json\Prognetics.Saga.Parser.Json.csproj" />
+    <ProjectReference Include="..\..\SagaLogIntegrations\Prognetics.Saga.Log.MongoDb\Prognetics.Saga.Log.MongoDb.csproj" />
     <ProjectReference Include="..\Prognetics.Saga.Queue.RabbitMQ.DependencyInjection\Prognetics.Saga.Queue.RabbitMQ.DependencyInjection.csproj" />
     <ProjectReference Include="..\Prognetics.Saga.Queue.RabbitMQ\Prognetics.Saga.Queue.RabbitMQ.csproj" />
   </ItemGroup>

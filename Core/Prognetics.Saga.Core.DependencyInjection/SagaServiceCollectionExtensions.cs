@@ -29,25 +29,6 @@ public static partial class SagaServiceCollectionExtensions
         return serviceCollection;
     }
 
-    public static ISagaConfiguration AddMongoDbSagaLog(
-        this ISagaConfiguration configuration,
-        Action<MongoDbSagaLogOptions> configure)
-    {
-        configuration.Services
-            .AddOptions<MongoDbSagaLogOptions>()
-            .BindConfiguration("Saga.Log")
-            .Configure(configure);
-
-        configuration.Services
-            .AddTransient(x => x.GetRequiredService<IOptions<MongoDbSagaLogOptions>>().Value)
-            .AddSingleton<IMongoClient>(x => new MongoClient(
-                x.GetRequiredService<MongoDbSagaLogOptions>().ConnectionString))
-            .AddSingleton<MongoDbCompensationStore>()
-            .AddSingleton<MongoDbSagaLog>();
-
-        return configuration;
-    }
-
     public static ISagaConfiguration AddTransactionLedgerSource<TSagaModelSource>(
         this ISagaConfiguration configuration)
         where TSagaModelSource : class, ITransactionLedgerSource

@@ -3,7 +3,7 @@ using MongoDB.Driver.Linq;
 using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Core.Model;
 
-namespace Prognetics.Saga.Orchestrator.SagaLog;
+namespace Prognetics.Saga.Log.MongoDb;
 public class MongoDbSagaLog : ISagaLog
 {
     private readonly IMongoCollection<TransactionLog> _transactionLogs;

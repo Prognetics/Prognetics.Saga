@@ -12,6 +12,7 @@ using Prognetics.Saga.Orchestrator.Contract.DTO;
 using Prognetics.Saga.Parsers.DependencyInjection;
 using Prognetics.Saga.Parsers.Core.Model;
 using Microsoft.Extensions.Configuration;
+using Prognetics.Saga.Log.MongoDb;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
 /// <summary>
@@ -21,7 +22,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
 {
     private const string _skipReason = null;
     private readonly RabbitMQContainerFixture _fixture;
-
+    private readonly MongoDbContainerFixture _mongoDbContainerFixture;
     private readonly RabbitMQSagaOptions _options = new ();
     private readonly RetryPolicy<BasicGetResult?> _gettingRetryPolicy = Policy
         .HandleResult<BasicGetResult?>(x => x == null)
@@ -37,9 +38,10 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
     private readonly IServiceProvider _serviceProvider;
     private readonly SagaBackgroundService _sut;
 
-    public RabbitMQSagaHostTests(RabbitMQContainerFixture fixture)
+    public RabbitMQSagaHostTests(RabbitMQContainerFixture fixture, MongoDbContainerFixture mongoDbContainerFixture)
     {
         _fixture = fixture;
+        _mongoDbContainerFixture = mongoDbContainerFixture;
         _connection = _fixture.Connection;
         _channel = _connection.CreateModel();
         _properties = _channel.CreateBasicProperties();
@@ -50,6 +52,7 @@ public sealed class RabbitMQSagaHostTests : IClassFixture<RabbitMQContainerFixtu
         _serviceCollection = new ServiceCollection()
             .AddLogging()
             .AddSaga(config => config
+                .UseMongoDbSagaLog(x => x.ConnectionString = _mongoDbContainerFixture.Container.GetConnectionString())
                 .UseParser(option =>
                 {
                     option.Configurations = new List<ReaderConfiguration>
