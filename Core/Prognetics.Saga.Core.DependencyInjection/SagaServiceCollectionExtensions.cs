@@ -1,11 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using MongoDB.Driver;
 using Prognetics.Saga.Core.Abstract;
-using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator;
 using Prognetics.Saga.Orchestrator.Contract;
-using Prognetics.Saga.Orchestrator.SagaLog;
 
 namespace Prognetics.Saga.Core.DependencyInjection;
 public static partial class SagaServiceCollectionExtensions

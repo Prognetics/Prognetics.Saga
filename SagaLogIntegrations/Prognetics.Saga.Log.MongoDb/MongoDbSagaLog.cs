@@ -39,6 +39,7 @@ public class MongoDbSagaLog : ISagaLog
                     .Eq(x => x.TransactionId, transactionLog.TransactionId),
                 Builders<TransactionLog>.Update
                     .Set(x => x.LastCompletionEvent, transactionLog.LastCompletionEvent)
-                    .Set(x => x.State, transactionLog.State),
+                    .Set(x => x.State, transactionLog.State)
+                    .Set(x => x.LastUpdate, DateTime.UtcNow),
                 cancellationToken: cancellationToken);
 }

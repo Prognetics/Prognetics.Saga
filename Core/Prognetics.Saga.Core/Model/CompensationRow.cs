@@ -3,4 +3,4 @@
 public record CompensationRow(
     string TransactionId,
     string CompensationEvent,
-    object Compensation);
+    string Compensation);
