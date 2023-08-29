@@ -4,6 +4,6 @@ public record TransactionLog
 {
     public required string TransactionId { get; init; }
     public required TransactionState State { get; init; }
-    public string? LastCompletionEvent { get; init; }
-    public DateTime LastUpdate { get; set; }
+    public required string LastCompletionEvent { get; init; }
+    public required DateTime LastUpdate { get; set; }
 }

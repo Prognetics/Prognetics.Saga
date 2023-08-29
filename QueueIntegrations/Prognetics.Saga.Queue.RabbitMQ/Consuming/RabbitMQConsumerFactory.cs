@@ -1,5 +1,4 @@
 ﻿using Prognetics.Saga.Orchestrator.Contract;
-using Prognetics.Saga.Orchestrator.Contract.DTO;
 using Prognetics.Saga.Queue.RabbitMQ.Serialization;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -22,14 +21,19 @@ public class RabbitMQConsumerFactory : IRabbitMQConsumerFactory
         var consumer = new EventingBasicConsumer(channel);
         consumer.Received += (sender, e) =>
         {
-            var inputMessage = _serializer.Deserialize<InputMessage>(e.Body);
+            var inputMessage = _serializer.Deserialize<RabbitMqInputMessage>(e.Body);
 
             if (inputMessage is null)
             {
                 return;
             }
 
-            orchestrator.Push(e.RoutingKey, inputMessage).GetAwaiter().GetResult();
+            orchestrator.Push(e.RoutingKey, new(
+                    inputMessage.TransactionId,
+                    inputMessage.Payload,
+                    inputMessage.Compensation?.ToString()))
+                .GetAwaiter()
+                .GetResult();
             channel.BasicAck(e.DeliveryTag, false);
         };
 

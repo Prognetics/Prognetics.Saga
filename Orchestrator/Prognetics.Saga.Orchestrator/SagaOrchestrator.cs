@@ -28,7 +28,7 @@ public class SagaOrchestrator : IStartableSagaOrchestrator
             throw new InvalidOperationException("Orchestrator have not been started");
         }
 
-        var output = await _engine.Process(new(eventName, inputMessage));
+        var output = await _engine.ProcessOrDefault(new(eventName, inputMessage));
         if (output.HasValue)
         {
             await _sagaSubscriber.OnMessage(
