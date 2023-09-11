@@ -3,6 +3,7 @@ using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
+using System.Diagnostics.CodeAnalysis;
 using System.Transactions;
 
 namespace Prognetics.Saga.Orchestrator;
@@ -29,7 +30,7 @@ public class SagaEngine : ISagaEngine
         _logger = logger;
     }
 
-    public async Task<EngineOutput?> ProcessOrDefault(EngineInput input)
+    public async Task<EngineResult> Process(EngineInput input)
     {
         var transactionLedger = _transactionLedgerAccessor.TransactionsLedger;
         var transactionStep = transactionLedger.GetTransactionStepByCompletionEventName(input.EventName);
@@ -37,7 +38,7 @@ public class SagaEngine : ISagaEngine
         if (transactionStep is null)
         {
             _logger.LogError("Unknown event name: {EventName}", input.EventName);
-            return null;
+            return EngineResult.Fail();
         }
 
         var transactionId = input.Message.TransactionId;
@@ -49,14 +50,14 @@ public class SagaEngine : ISagaEngine
         else if (transactionId is null)
         {
             _logger.LogError("Transaction id is missing");
-            return null;
+            return EngineResult.Fail();
         }
         else if (await TryProcessExistingTransaction(transactionId, transactionStep) == false)
         {
-            return null;
+            return EngineResult.Fail();
         }
 
-        if (!string.IsNullOrEmpty(input.Message.Compensation))
+        if (CompensationExists(input.Message.Compensation))
         {
             await _compensationStore.Save(
                 new(
@@ -65,12 +66,16 @@ public class SagaEngine : ISagaEngine
                     input.Message.Compensation));
         }
 
-        return new(
-            transactionStep.Step.CompletionEventName,
-            new(
-                transactionId,
-                input.Message.Payload));
+        return EngineResult.Success(
+            new EngineOutput(
+                transactionStep.Step.NextEventName,
+                new OutputMessage(
+                    transactionId,
+                    input.Message.Payload)));
     }
+
+    private static bool CompensationExists([NotNullWhen(true)]string? compensation)
+        => !string.IsNullOrEmpty(compensation);
 
     private async Task<string> InitializeTransaction(TransactionStep stepRecord)
     {
