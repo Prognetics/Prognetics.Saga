@@ -7,7 +7,7 @@ public interface ISagaLog
         TransactionLog transactionLog,
         CancellationToken cancellationToken = default);
 
-    Task<TransactionLog> GetTransaction(
+    Task<TransactionLog?> GetTransactionOrDefault(
         string transactionId,
         CancellationToken cancellationToken = default);
 

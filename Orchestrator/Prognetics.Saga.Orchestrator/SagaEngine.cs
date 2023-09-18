@@ -4,7 +4,6 @@ using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
 using System.Diagnostics.CodeAnalysis;
-using System.Transactions;
 
 namespace Prognetics.Saga.Orchestrator;
 
@@ -81,19 +80,17 @@ public class SagaEngine : ISagaEngine
     {
         var transactionId = _idGenerator();
         await _sagaLog.AddTransaction(
-            new()
-            {
-                TransactionId = transactionId,
-                State = TransactionState.Active,
-                LastCompletionEvent = stepRecord.Step.CompletionEventName,
-                LastUpdate = DateTime.UtcNow,
-            });
+            new(
+                transactionId,
+                TransactionState.Active,
+                stepRecord.Step.CompletionEventName,
+                DateTime.UtcNow));
         return transactionId;
     }
 
     private async Task<bool> TryProcessExistingTransaction(string transactionId, TransactionStep transactionStep)
     {
-        var transactionLog = await _sagaLog.GetTransaction(transactionId);
+        var transactionLog = await _sagaLog.GetTransactionOrDefault(transactionId);
         if (transactionLog is null)
         {
             _logger.LogError("Transaction with id: {TransactionId} has not been found", transactionId);
@@ -115,15 +112,13 @@ public class SagaEngine : ISagaEngine
             return false;
         }
 
-        await _sagaLog.UpdateTransaction(new()
-        {
-            TransactionId = transactionId,
-            State = transactionStep.IsLast
+        await _sagaLog.UpdateTransaction(new(
+            transactionId,
+            transactionStep.IsLast
                 ? TransactionState.Finished
-                : TransactionState.Failed,
-            LastCompletionEvent = transactionStep.Step.CompletionEventName,
-            LastUpdate = DateTime.UtcNow,
-        });
+                : TransactionState.Active,
+            transactionStep.Step.CompletionEventName,
+            DateTime.UtcNow));
 
         return true;
     }
