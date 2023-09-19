@@ -21,18 +21,20 @@ public class RabbitMQAsyncConsumerFactory : IRabbitMQConsumerFactory
         var consumer = new AsyncEventingBasicConsumer(channel);
         consumer.Received += async (sender, e) =>
         {
-            var inputMessage = _serializer.Deserialize<InputMessage>(e.Body);
+            var inputMessage = _serializer.Deserialize<RabbitMqInputMessage>(e.Body);
 
             if (inputMessage is null)
             {
                 return;
             }
 
-            await orchestrator.Push(e.RoutingKey, inputMessage);
+            await orchestrator.Push(e.RoutingKey, new(
+                inputMessage.TransactionId,
+                inputMessage.Payload,
+                inputMessage.Compensation?.ToString()));
             channel.BasicAck(e.DeliveryTag, false);
         };
 
         return consumer;
     }
 }
-

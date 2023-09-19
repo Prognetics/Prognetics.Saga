@@ -1,33 +1,125 @@
+using Microsoft.Extensions.Logging;
 using Prognetics.Saga.Core.Abstract;
+using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Prognetics.Saga.Orchestrator;
 
 public class SagaEngine : ISagaEngine
 {
+    private readonly ISagaLog _sagaLog;
+    private readonly ICompensationStore _compensationStore;
     private readonly ITransactionLedgerAccessor _transactionLedgerAccessor;
+    private readonly IdGenerator _idGenerator;
+    private readonly ILogger<ISagaEngine> _logger;
 
-    public SagaEngine(ITransactionLedgerAccessor transactionLedgerAccessor)
+    public SagaEngine(
+        ISagaLog sagaLog,
+        ICompensationStore compensationStore,
+        ITransactionLedgerAccessor transactionLedgerAccessor,
+        IdGenerator idGenerator,
+        ILogger<ISagaEngine> logger)
     {
+        _sagaLog = sagaLog;
+        _compensationStore = compensationStore;
         _transactionLedgerAccessor = transactionLedgerAccessor;
+        _idGenerator = idGenerator;
+        _logger = logger;
     }
 
-    public Task<EngineOutput?> Process(EngineInput input)
+    public async Task<EngineResult> Process(EngineInput input)
     {
         var transactionLedger = _transactionLedgerAccessor.TransactionsLedger;
-        var transactionModel = transactionLedger.GetTransactionByCompletionEventName(input.EventName);
-        var stepRecord = transactionModel?.GetStepByCompletionEventName(input.EventName);
+        var transactionStep = transactionLedger.GetTransactionStepByCompletionEventName(input.EventName);
 
-        if (stepRecord is null || transactionModel is null)
+        if (transactionStep is null)
         {
-            return Task.FromResult((EngineOutput?)null);
+            _logger.LogError("Unknown event name: {EventName}", input.EventName);
+            return EngineResult.Fail();
         }
 
-        return Task.FromResult((EngineOutput?)new EngineOutput(
-            stepRecord.Step.CompletionEventName,
-            new OutputMessage(
-                input.Message.TransactionId ?? Guid.NewGuid().ToString(),
-                input.Message.Payload)));
+        var transactionId = input.Message.TransactionId;
+
+        if (transactionStep.IsFirst)
+        {
+            transactionId = await InitializeTransaction(transactionStep);
+        }
+        else if (transactionId is null)
+        {
+            _logger.LogError("Transaction id is missing");
+            return EngineResult.Fail();
+        }
+        else if (await TryProcessExistingTransaction(transactionId, transactionStep) == false)
+        {
+            return EngineResult.Fail();
+        }
+
+        if (CompensationExists(input.Message.Compensation))
+        {
+            await _compensationStore.Save(
+                new(
+                    transactionId,
+                    transactionStep.Step.CompensationEventName,
+                    input.Message.Compensation));
+        }
+
+        return EngineResult.Success(
+            new EngineOutput(
+                transactionStep.Step.NextEventName,
+                new OutputMessage(
+                    transactionId,
+                    input.Message.Payload)));
+    }
+
+    private static bool CompensationExists([NotNullWhen(true)]string? compensation)
+        => !string.IsNullOrEmpty(compensation);
+
+    private async Task<string> InitializeTransaction(TransactionStep stepRecord)
+    {
+        var transactionId = _idGenerator();
+        await _sagaLog.AddTransaction(
+            new(
+                transactionId,
+                TransactionState.Active,
+                stepRecord.Step.CompletionEventName,
+                DateTime.UtcNow));
+        return transactionId;
+    }
+
+    private async Task<bool> TryProcessExistingTransaction(string transactionId, TransactionStep transactionStep)
+    {
+        var transactionLog = await _sagaLog.GetTransactionOrDefault(transactionId);
+        if (transactionLog is null)
+        {
+            _logger.LogError("Transaction with id: {TransactionId} has not been found", transactionId);
+            return false;
+        }
+
+        var lastOperation = transactionStep.Transaction.GetStepByCompletionEventNameOrDefault(transactionLog.LastCompletionEvent);
+        var nextOperation = lastOperation is not null
+            ? transactionStep.Transaction.GetStepByOrderNumber(lastOperation.Order + 1)
+            : null;
+
+        if (transactionStep.Step != nextOperation)
+        {
+            _logger.LogError(
+                "Transaction with id {TransactionId} expects {ExpectedEvent}, but received {ReceivedEvent}",
+                transactionId,
+                transactionStep.Step.CompletionEventName,
+                nextOperation?.CompletionEventName);
+            return false;
+        }
+
+        await _sagaLog.UpdateTransaction(new(
+            transactionId,
+            transactionStep.IsLast
+                ? TransactionState.Finished
+                : TransactionState.Active,
+            transactionStep.Step.CompletionEventName,
+            DateTime.UtcNow));
+
+        return true;
     }
 }

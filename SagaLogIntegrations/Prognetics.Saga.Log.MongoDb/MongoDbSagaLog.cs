@@ -23,7 +23,7 @@ public class MongoDbSagaLog : ISagaLog
         => await _transactionLogs
             .InsertOneAsync(transactionLog, cancellationToken: cancellationToken);
 
-    public async Task<TransactionLog> GetTransaction(
+    public async Task<TransactionLog?> GetTransactionOrDefault(
         string transactionId,
         CancellationToken cancellationToken = default)
         => await _transactionLogs
