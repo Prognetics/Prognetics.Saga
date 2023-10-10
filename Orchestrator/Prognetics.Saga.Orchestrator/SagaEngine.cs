@@ -14,6 +14,7 @@ public class SagaEngine : ISagaEngine
     private readonly ITransactionLedgerAccessor _transactionLedgerAccessor;
     private readonly IdGenerator _idGenerator;
     private readonly ILogger<ISagaEngine> _logger;
+    private readonly SemaphoreSlim _semaphore = new(1);
 
     public SagaEngine(
         ISagaLog sagaLog,
@@ -29,7 +30,9 @@ public class SagaEngine : ISagaEngine
         _logger = logger;
     }
 
-    public async Task<EngineResult> Process(EngineInput input)
+    public async Task<EngineResult<EngineOutput>> Process(
+        EngineInput input,
+        CancellationToken cancellationToken = default)
     {
         var transactionLedger = _transactionLedgerAccessor.TransactionsLedger;
         var transactionStep = transactionLedger.GetTransactionStepByCompletionEventName(input.EventName);
@@ -37,7 +40,7 @@ public class SagaEngine : ISagaEngine
         if (transactionStep is null)
         {
             _logger.LogError("Unknown event name: {EventName}", input.EventName);
-            return EngineResult.Fail();
+            return EngineResult<EngineOutput>.Fail();
         }
 
         var transactionId = input.Message.TransactionId;
@@ -49,11 +52,11 @@ public class SagaEngine : ISagaEngine
         else if (transactionId is null)
         {
             _logger.LogError("Transaction id is missing");
-            return EngineResult.Fail();
+            return EngineResult<EngineOutput>.Fail();
         }
         else if (await TryProcessExistingTransaction(transactionId, transactionStep) == false)
         {
-            return EngineResult.Fail();
+            return EngineResult<EngineOutput>.Fail();
         }
 
         if (CompensationExists(input.Message.Compensation))
@@ -62,10 +65,11 @@ public class SagaEngine : ISagaEngine
                 new(
                     transactionId,
                     transactionStep.Step.CompensationEventName,
-                    input.Message.Compensation));
+                    input.Message.Compensation),
+                cancellationToken);
         }
 
-        return EngineResult.Success(
+        return EngineResult<EngineOutput>.Success(
             new EngineOutput(
                 transactionStep.Step.NextEventName,
                 new OutputMessage(
@@ -119,6 +123,104 @@ public class SagaEngine : ISagaEngine
                 : TransactionState.Active,
             transactionStep.Step.CompletionEventName,
             DateTime.UtcNow));
+
+        return true;
+    }
+
+    public async Task<EngineResult<IEnumerable<EngineOutput>>> Compensate(
+        string transactionId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _semaphore.WaitAsync(cancellationToken);
+            var transactionLog = await _sagaLog.GetTransactionOrDefault(transactionId, cancellationToken);
+
+            if (CompensationCanBeExecuted(transactionId, transactionLog) == false)
+            {
+                return EngineResult<IEnumerable<EngineOutput>>.Fail();
+            }
+
+            await _sagaLog.UpdateTransaction(
+                new(
+                    transactionId,
+                    TransactionState.Rollback,
+                    transactionLog.LastCompletionEvent,
+                    DateTime.UtcNow),
+                cancellationToken);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+
+        var compensations = await _compensationStore.Get(transactionId, cancellationToken);
+        return EngineResult<IEnumerable<EngineOutput>>.Success(compensations.Select(c =>
+            new EngineOutput(
+                c.CompensationEvent,
+                new OutputMessage(transactionId, c.Compensation))));
+    }
+
+    public async Task CompleteRollback(
+        string transactionId,
+        CancellationToken cancellationToken = default)
+    {
+        var transactionLog = await _sagaLog.GetTransactionOrDefault(transactionId, cancellationToken);
+
+        if (transactionLog == null)
+        {
+            _logger.LogWarning(
+                "The transaction with id: {TransactionId} does not exist in the system, so rollback completion will not be executed.",
+                transactionId);
+            return;
+        }
+
+        if (transactionLog.State != TransactionState.Rollback)
+        {
+            _logger.LogWarning(
+                "The transaction with id: {TransactionId} can not be completed its current state: {TransactionState}.",
+                transactionId,
+                transactionLog.State);
+            return;
+        }
+
+        await _sagaLog.UpdateTransaction(
+            new(
+                transactionId,
+                TransactionState.Failed,
+                transactionLog.LastCompletionEvent,
+                DateTime.UtcNow),
+            cancellationToken);
+    }
+
+    private bool CompensationCanBeExecuted(
+        string transactionId,
+        [NotNullWhen(true)]TransactionLog? transactionLog)
+    {
+        if (transactionLog is null)
+        {
+            _logger.LogWarning(
+                "The transaction with id: {TransactionId} does not exist in the system. Compensation will not be executed",
+                transactionId);
+            return false;
+        }
+
+        if (transactionLog.State == TransactionState.Finished
+            || transactionLog.State == TransactionState.Failed)
+        {
+            _logger.LogWarning(
+                "The transaction with id: {TransactionId} has already completed. Compensation will not be executed",
+                transactionId);
+            return false;
+        }
+
+        if (transactionLog.State == TransactionState.Rollback)
+        {
+            _logger.LogWarning(
+                "The transaction with id: {TransactionId} is already in the process of rolling back. Compensation will not be executed.",
+                transactionId);
+            return false;
+        }
 
         return true;
     }
