@@ -109,14 +109,12 @@ public class RabbitMQSagaHostTests
     {
         // Arrange
         const int queuesCount = 10;
+        const string exchange = "saga";
         var queues = Enumerable.Range(0, queuesCount)
-            .Select(x => new RabbitMQQueue { Name = $"Queue{x}" })
+            .Select(x => new RabbitMQQueue { Name = $"Queue{x}", Exchange = exchange })
             .ToList();
 
-        const string exchange = "saga";
-
         _sagaQueuesProvider.GetQueues().Returns(queues);
-        _options.Exchange = exchange;
 
         var consumers = Enumerable.Range(0, queuesCount)
             .Select(x => new RabbitMQConsumer

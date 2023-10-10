@@ -70,7 +70,7 @@ public class SagaEngineTests
         // Arrange
         var input = new EngineInput
         {
-            EventName = "FirstCompletionEventName",
+            EventName = $"First{nameof(Step.CompletionEventName)}",
             Message =  new(null, new object(), null)
         };
 
@@ -79,7 +79,7 @@ public class SagaEngineTests
 
         // Assert
         Assert.True(result.TryGetOutput(out var output));
-        Assert.NotNull(output);
+        Assert.Equal($"First{nameof(Step.NextEventName)}", output.EventName);
 
         await _sagaLog.Received().AddTransaction(Arg.Any<TransactionLog>());
     }
@@ -125,8 +125,7 @@ public class SagaEngineTests
 
         // Assert
         Assert.True(result.TryGetOutput(out var output));
-        Assert.True(output.HasValue);
-        Assert.Equal(nextName, output.Value.EventName);
+        Assert.Equal(nextName, output.EventName);
         await _sagaLog.Received().UpdateTransaction(Arg.Any<TransactionLog>());
     }
 
@@ -159,8 +158,7 @@ public class SagaEngineTests
 
         // Assert
         Assert.True(result.TryGetOutput(out var output));
-        Assert.True(output.HasValue);
-        Assert.Equal(nextName, output.Value.EventName);
+        Assert.Equal(nextName, output.EventName);
         await _sagaLog.Received().UpdateTransaction(Arg.Is<TransactionLog>(x => 
             x.TransactionId == transactionId
             && x.LastCompletionEvent == eventName
@@ -196,8 +194,7 @@ public class SagaEngineTests
 
         // Assert
         Assert.True(result.TryGetOutput(out var output));
-        Assert.True(output.HasValue);
-        Assert.Equal(nextName, output.Value.EventName);
+        Assert.Equal(nextName, output.EventName);
         await _sagaLog.Received().UpdateTransaction(Arg.Is<TransactionLog>(x =>
             x.TransactionId == transactionId
             && x.LastCompletionEvent == eventName
