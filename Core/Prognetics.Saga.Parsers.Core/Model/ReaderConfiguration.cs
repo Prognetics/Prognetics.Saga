@@ -5,5 +5,7 @@
         public string ParserType { get; set; }
 
         public string Path { get; set; }
+
+        public bool MonitorSource { get; set; }
     }
 }

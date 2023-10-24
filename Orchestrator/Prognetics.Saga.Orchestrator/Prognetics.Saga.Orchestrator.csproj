@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Prognetics.Saga.Core\Prognetics.Saga.Core.csproj" />
+    <ProjectReference Include="..\..\Core\Prognetics.SagaLog.Core\Prognetics.SagaLog.Core.csproj" />
     <ProjectReference Include="..\Prognetics.Saga.Orchestrator.Contract\Prognetics.Saga.Orchestrator.Contract.csproj" />
   </ItemGroup>
 
