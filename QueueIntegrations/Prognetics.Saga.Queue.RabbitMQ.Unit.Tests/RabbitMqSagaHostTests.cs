@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
-using Prognetics.Saga.Core.Abstract;
-using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
@@ -18,8 +16,6 @@ public class RabbitMQSagaHostTests
     private readonly IRabbitMQConnectionFactory _connectionFactory;
     private readonly IRabbitMQQueuesProvider _sagaQueuesProvider;
     private readonly IStartableSagaOrchestrator _sagaOrchestrator;
-    private readonly TransactionsLedger _transactionLedger;
-    private readonly ITransactionLedgerAccessor _transactionLedgerAccessor;
     private readonly IRabbitMQConsumersFactory _consumersFactory;
     private readonly ISagaSubscriber _subscriber;
     private readonly IBasicConsumer _basicConsumer;
@@ -36,8 +32,6 @@ public class RabbitMQSagaHostTests
         _sagaQueuesProvider = Substitute.For<IRabbitMQQueuesProvider>();
         _sagaQueuesProvider = Substitute.For<IRabbitMQQueuesProvider>();
         _sagaOrchestrator = Substitute.For<IStartableSagaOrchestrator>();
-        _transactionLedger = new TransactionsLedger();
-        _transactionLedgerAccessor = Substitute.For<ITransactionLedgerAccessor>();
         _consumersFactory = Substitute.For<IRabbitMQConsumersFactory>();
         _subscriber = Substitute.For<ISagaSubscriber>();
         _basicConsumer = Substitute.For<IBasicConsumer>();
@@ -48,14 +42,12 @@ public class RabbitMQSagaHostTests
         _connectionFactory.Create().Returns(_connection);
         _connection.CreateModel().Returns(_channel);
         _subscriberFactory.Create(_channel).Returns(_subscriber);
-        _transactionLedgerAccessor.TransactionsLedger.Returns(_transactionLedger);
 
         _sut = new RabbitMQSagaClient(
             _connectionFactory,
             _sagaQueuesProvider,
             _consumersFactory,
             _subscriberFactory,
-            _transactionLedgerAccessor,
             _options,
             _logger);
     }
@@ -69,7 +61,7 @@ public class RabbitMQSagaHostTests
             .Select(x => new RabbitMQQueue { Name = $"Queue{x}" })
             .ToList();
 
-        _sagaQueuesProvider.GetQueues(_transactionLedger).Returns(queues);
+        _sagaQueuesProvider.GetQueues().Returns(queues);
 
         var consumers = Enumerable.Range(0, queuesCount)
 			.Select(x => new RabbitMQConsumer
@@ -117,14 +109,12 @@ public class RabbitMQSagaHostTests
     {
         // Arrange
         const int queuesCount = 10;
+        const string exchange = "saga";
         var queues = Enumerable.Range(0, queuesCount)
-            .Select(x => new RabbitMQQueue { Name = $"Queue{x}" })
+            .Select(x => new RabbitMQQueue { Name = $"Queue{x}", Exchange = exchange })
             .ToList();
 
-        const string exchange = "saga";
-
-        _sagaQueuesProvider.GetQueues(_transactionLedger).Returns(queues);
-        _options.Exchange = exchange;
+        _sagaQueuesProvider.GetQueues().Returns(queues);
 
         var consumers = Enumerable.Range(0, queuesCount)
             .Select(x => new RabbitMQConsumer

@@ -2,24 +2,24 @@
 
 namespace Prognetics.Saga.Orchestrator.Contract.DTO;
 
-public readonly struct EngineResult
+public readonly struct EngineResult<TOutput>
 {
-    private readonly EngineOutput? _output;
+    private readonly TOutput _output;
     private readonly bool _isSuccess;
 
     private EngineResult(
         bool isSuccess,
-        EngineOutput? output)
+        TOutput output)
     {
         _isSuccess = isSuccess;
         _output = output;
     }
 
-    public static EngineResult Fail() => new(false, null);
+    public static EngineResult<TOutput> Fail() => new(false, default!);
 
-    public static EngineResult Success(EngineOutput output) => new(true, output);
+    public static EngineResult<TOutput> Success(TOutput output) => new(true, output);
 
-    public bool TryGetOutput([NotNullWhen(true)]out EngineOutput? output)
+    public bool TryGetOutput([NotNullWhen(true)]out TOutput? output)
     {
         if (_isSuccess)
         {
@@ -27,7 +27,7 @@ public readonly struct EngineResult
         }
         else
         {
-            output = null;
+            output = default;
         }
 
         return _isSuccess;

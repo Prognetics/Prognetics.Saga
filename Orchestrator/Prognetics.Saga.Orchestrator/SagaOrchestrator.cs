@@ -32,8 +32,29 @@ public class SagaOrchestrator : IStartableSagaOrchestrator
         if (result.TryGetOutput(out var output))
         {
             await _sagaSubscriber.OnMessage(
-                output.Value.EventName,
-                output.Value.Message);
+                output.EventName,
+                output.Message);
         }
+    }
+
+    public async Task Rollback(string transactionId, CancellationToken cancellationToken = default)
+    {
+        if (!IsStarted || _sagaSubscriber is null)
+        {
+            throw new InvalidOperationException("Orchestrator have not been started");
+        }
+
+        var result = await _engine.Compensate(transactionId, cancellationToken);
+        if (!result.TryGetOutput(out var compensations))
+        {
+            return;
+        }
+
+        await Task.WhenAll(
+            compensations.Select(x =>
+                _sagaSubscriber.OnMessage(x.EventName, x.Message)));
+
+        await _engine.CompleteRollback(transactionId, cancellationToken);
+
     }
 }

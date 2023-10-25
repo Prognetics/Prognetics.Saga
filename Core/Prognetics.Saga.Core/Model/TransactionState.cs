@@ -4,5 +4,6 @@ public enum TransactionState
 {
     Active,
     Finished,
+    Rollback,
     Failed,
 }
