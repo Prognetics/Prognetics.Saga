@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Prognetics.Saga.Parser.Json.Reader
 {
-    public class JsonFromFileTransactionLedgerReader : IModelSource
+    public class JsonFromFileTransactionLedgerReader : ITransactionLedgerSource
     {
         private readonly ReaderConfiguration _readerConfiguration;
 
@@ -19,9 +19,7 @@ namespace Prognetics.Saga.Parser.Json.Reader
             }
         }
 
-        public event EventHandler ModelChanged;
-
-        public async Task<TransactionsLedger> GetModel(CancellationToken cancellation = default)
+        public async Task<TransactionsLedger> GetTransactionLedger(CancellationToken cancellation = default)
         {
             using var stream = File.OpenRead(_readerConfiguration.Path);
             return await JsonSerializer.DeserializeAsync<TransactionsLedger>(stream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, cancellation);

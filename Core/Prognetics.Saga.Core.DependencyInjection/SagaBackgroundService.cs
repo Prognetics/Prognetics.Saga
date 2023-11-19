@@ -1,52 +1,16 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Prognetics.Saga.Orchestrator;
+﻿using Microsoft.Extensions.Hosting;
+using Prognetics.Saga.Orchestrator.Contract;
 
 namespace Prognetics.Saga.Core.DependencyInjection;
 public class SagaBackgroundService : BackgroundService
 {
-    private readonly IServiceProvider _serviceProvider;
-    private IServiceScope? _scope;
-    private ISagaHost? _host;
-    private bool _isRunning;
+    private readonly ISagaHost _host;
 
-    public SagaBackgroundService(IServiceProvider serviceProvider)
-        => _serviceProvider = serviceProvider;
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public SagaBackgroundService(ISagaHost sagaHost)
     {
-        if (_isRunning)
-        {
-            throw new InvalidOperationException($"{nameof(SagaBackgroundService)} is running");
-        }
-
-        _scope = _serviceProvider.CreateScope();
-        _host = _serviceProvider.GetRequiredService<ISagaHost>();
-        await _host.Start(stoppingToken);
-        _isRunning = true;
+        _host = sagaHost;
     }
 
-    public override async Task StopAsync(CancellationToken cancellation)
-    {
-        await base.StopAsync(cancellation);
-        _isRunning = false;
-    }
-
-    public override void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _host?.Dispose();
-            _scope?.Dispose();
-            base.Dispose();
-        }
-
-        _isRunning = false;
-    }
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        => _host.Start(stoppingToken);
 }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
-using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
@@ -16,8 +15,7 @@ public class RabbitMQSagaHostTests
     private readonly IModel _channel;
     private readonly IRabbitMQConnectionFactory _connectionFactory;
     private readonly IRabbitMQQueuesProvider _sagaQueuesProvider;
-    private readonly ISagaOrchestrator _sagaOrchestrator;
-    private readonly TransactionsLedger _model;
+    private readonly IStartableSagaOrchestrator _sagaOrchestrator;
     private readonly IRabbitMQConsumersFactory _consumersFactory;
     private readonly ISagaSubscriber _subscriber;
     private readonly IBasicConsumer _basicConsumer;
@@ -32,9 +30,8 @@ public class RabbitMQSagaHostTests
         _connection = Substitute.For<IConnection>();
         _connectionFactory = Substitute.For<IRabbitMQConnectionFactory>();
         _sagaQueuesProvider = Substitute.For<IRabbitMQQueuesProvider>();
-        _sagaOrchestrator = Substitute.For<ISagaOrchestrator>();
-        _model = new TransactionsLedger();
-        _sagaOrchestrator.Model.Returns(_model);
+        _sagaQueuesProvider = Substitute.For<IRabbitMQQueuesProvider>();
+        _sagaOrchestrator = Substitute.For<IStartableSagaOrchestrator>();
         _consumersFactory = Substitute.For<IRabbitMQConsumersFactory>();
         _subscriber = Substitute.For<ISagaSubscriber>();
         _basicConsumer = Substitute.For<IBasicConsumer>();
@@ -56,7 +53,7 @@ public class RabbitMQSagaHostTests
     }
 
     [Fact]
-    public void WhenHostingIsCorrectlyConfigured_ThenShouldConfigureChannelCorrectly()
+    public async Task WhenHostingIsCorrectlyConfigured_ThenShouldConfigureChannelCorrectly()
     {
         // Arrange
         const int queuesCount = 10;
@@ -64,7 +61,7 @@ public class RabbitMQSagaHostTests
             .Select(x => new RabbitMQQueue { Name = $"Queue{x}" })
             .ToList();
 
-        _sagaQueuesProvider.GetQueues(_model).Returns(queues);
+        _sagaQueuesProvider.GetQueues().Returns(queues);
 
         var consumers = Enumerable.Range(0, queuesCount)
 			.Select(x => new RabbitMQConsumer
@@ -78,7 +75,8 @@ public class RabbitMQSagaHostTests
 		var source = new CancellationTokenSource();
 
 		// Act
-		_sut.Start(_sagaOrchestrator);
+        await _sut.Initialize();
+        await _sut.Consume(_sagaOrchestrator);
 
         _channel.Received(queuesCount).QueueDeclare(
             Arg.Is<string>(x => queues.Any(q => q.Name == x)),
@@ -103,22 +101,20 @@ public class RabbitMQSagaHostTests
 			false,
 			null);
 
-		_sagaOrchestrator.Received().Subscribe(_subscriber);
+        Assert.Equal(_subscriber, await _sut.GetSubscriber());
 	}
 
     [Fact]
-    public void WhenExchageIsSet_ThenShouldDeclareQueuesCorrectly()
+    public async Task WhenExchageIsSet_ThenShouldDeclareQueuesCorrectly()
     {
         // Arrange
         const int queuesCount = 10;
+        const string exchange = "saga";
         var queues = Enumerable.Range(0, queuesCount)
-            .Select(x => new RabbitMQQueue { Name = $"Queue{x}" })
+            .Select(x => new RabbitMQQueue { Name = $"Queue{x}", Exchange = exchange })
             .ToList();
 
-        const string exchange = "saga";
-
-        _sagaQueuesProvider.GetQueues(_model).Returns(queues);
-        _options.Exchange = exchange;
+        _sagaQueuesProvider.GetQueues().Returns(queues);
 
         var consumers = Enumerable.Range(0, queuesCount)
             .Select(x => new RabbitMQConsumer
@@ -128,11 +124,15 @@ public class RabbitMQSagaHostTests
             })
             .ToList();
 
-        _consumersFactory.Create(_channel, _sagaOrchestrator).Returns(consumers);
-        var source = new CancellationTokenSource();
+        _consumersFactory
+            .Create(
+                _channel,
+                _sagaOrchestrator)
+            .Returns(consumers);
 
         // Act
-        _sut.Start(_sagaOrchestrator);
+        await _sut.Initialize();
+        await _sut.Consume(_sagaOrchestrator);
 
         _channel.Received(queuesCount).QueueDeclare(
             Arg.Is<string>(x => queues.Any(q => q.Name == x)),
@@ -158,6 +158,6 @@ public class RabbitMQSagaHostTests
             false,
             null);
 
-        _sagaOrchestrator.Received().Subscribe(_subscriber);
+        Assert.Equal(_subscriber, await _sut.GetSubscriber());
     }
 }

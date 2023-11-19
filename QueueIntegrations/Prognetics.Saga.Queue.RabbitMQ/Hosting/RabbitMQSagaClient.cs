@@ -36,10 +36,7 @@ public class RabbitMQSagaClient : ISagaClient
         _rabbitMqConnectionFactory = rabbitMqConnectionFactory;
     }
 
-    public Task Start(
-       ISagaOrchestrator orchestrator,
-       CancellationToken cancellationToken = default)
-    {
+    public Task Initialize(){
         _connection = _rabbitMqConnectionFactory.Create();
         _connection.CallbackException += OnExceptionHandler;
         _connection.ConnectionShutdown += OnShutdownHandler;
@@ -53,7 +50,9 @@ public class RabbitMQSagaClient : ISagaClient
             _channel.ExchangeDeclare(exchange, ExchangeType.Direct);
         }
 
-        foreach (var queue in _queuesProvider.GetQueues(orchestrator.Model))
+        _channel.ExchangeDeclare(_options.DlxExchange, ExchangeType.Direct);
+
+        foreach (var queue in _queuesProvider.GetQueues())
         {
             _channel.QueueDeclare(
                 queue.Name,
@@ -62,14 +61,32 @@ public class RabbitMQSagaClient : ISagaClient
                 queue.AutoDelete,
                 queue.Arguments);
 
-            if (!string.IsNullOrEmpty(exchange))
+            if (!string.IsNullOrEmpty(queue.Exchange))
             {
                 _channel.QueueBind(
                     queue.Name,
-                    exchange,
+                    queue.Exchange,
                     queue.Name,
                     null);
             }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<ISagaSubscriber> GetSubscriber(){
+        if (_channel is null)
+        {
+            throw new InvalidOperationException("Client has not been initialized");
+        }
+
+        return Task.FromResult(_sagaSubscriberFactory.Create(_channel));
+    }
+
+    public Task Consume(ISagaOrchestrator orchestrator){
+        if (_channel is null)
+        {
+            throw new InvalidOperationException("Client has not been initialized");
         }
 
         var consumers = _rabbitMqSagaConsumersFactory.Create(
@@ -88,8 +105,6 @@ public class RabbitMQSagaClient : ISagaClient
                 consumer.Arguments);
         }
 
-        var sagaSubscriber = _sagaSubscriberFactory.Create(_channel);
-        orchestrator.Subscribe(sagaSubscriber);
         return Task.CompletedTask;
     }
 

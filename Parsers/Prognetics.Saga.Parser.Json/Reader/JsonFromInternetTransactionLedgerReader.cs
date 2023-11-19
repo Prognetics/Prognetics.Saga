@@ -1,14 +1,12 @@
 ﻿using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Parsers.Core.Model;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text.Json;
-using System.Text.Unicode;
 
 namespace Prognetics.Saga.Parser.Json.Reader
 {
-    public class JsonFromInternetTransactionLedgerReader : IModelSource
+    public class JsonFromInternetTransactionLedgerReader : ITransactionLedgerSource
     {
         private readonly ReaderConfiguration _readerConfiguration;
         private static string VersionHash;
@@ -25,7 +23,7 @@ namespace Prognetics.Saga.Parser.Json.Reader
 
         public event EventHandler ModelChanged;
 
-        public async Task<TransactionsLedger> GetModel(CancellationToken cancellation = default)
+        public async Task<TransactionsLedger> GetTransactionLedger(CancellationToken cancellation = default)
         {
             using var client = new HttpClient();
             var fileStream = await client.GetStreamAsync(_readerConfiguration.Path);

@@ -2,5 +2,8 @@
 
 public interface ITransactionBuilder
 {
-    ITransactionBuilder AddStep(string eventName, string completionEventName, string compensationEventName);
+    ITransactionBuilder AddStep(
+        string completionEventName,
+        string nextEventName,
+        string compensationEventName);
 }

@@ -4,7 +4,7 @@ public class RabbitMQQueue
 {
     public required string Name { get; init; }
 
-    public string Exchange { get; init; } = string.Empty;
+    public string? Exchange { get; init; }
 
     public bool Durable { get; init; }
 
