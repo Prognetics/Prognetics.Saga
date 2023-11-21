@@ -4,54 +4,70 @@ using Prognetics.Saga.Parsers.Core.Model;
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace Prognetics.Saga.Parser.Json.Reader
+namespace Prognetics.Saga.Parser.Json.Reader;
+
+public class JsonFromInternetTransactionLedgerReader : ITransactionLedgerSource
 {
-    public class JsonFromInternetTransactionLedgerReader : ITransactionLedgerSource
+    private readonly ReaderConfiguration _readerConfiguration;
+    private readonly HttpClient _httpClient = new();
+    private string? _versionHash;
+
+    public JsonFromInternetTransactionLedgerReader(ReaderConfiguration readerConfiguration)
     {
-        private readonly ReaderConfiguration _readerConfiguration;
-        private static string VersionHash;
+        _readerConfiguration = readerConfiguration;
+    }
 
-        public JsonFromInternetTransactionLedgerReader(ReaderConfiguration readerConfiguration)
-        {
-            _readerConfiguration = readerConfiguration;
-
-            if (readerConfiguration.MonitorSource)
+    public async Task<TransactionsLedger> GetTransactionLedger(CancellationToken cancellation = default)
+    {
+        using var fileStream = await _httpClient.GetStreamAsync(
+            _readerConfiguration.Path,
+            cancellation);
+        var result = await JsonSerializer.DeserializeAsync<TransactionsLedger>(
+            fileStream,
+            new JsonSerializerOptions
             {
-                MonitorSourceChanges();
-            }
-        }        
+                PropertyNameCaseInsensitive = true
+            },
+            cancellation)
+            ?? throw new NullReferenceException($"We could not read file from source {nameof(JsonFromInternetTransactionLedgerReader)}");
+        _versionHash = Convert.ToBase64String(SHA256.HashData(fileStream));
 
-        public event EventHandler ModelChanged;
+        return result;
+    }
 
-        public async Task<TransactionsLedger> GetTransactionLedger(CancellationToken cancellation = default)
+    public async Task TrackTransactionLedger(
+        Action<TransactionsLedger> callback,
+        Action<Exception> onError,
+        CancellationToken cancellation = default)
+    {
+        if (!_readerConfiguration.TrackingEnabled)
         {
-            using var client = new HttpClient();
-            var fileStream = await client.GetStreamAsync(_readerConfiguration.Path);
-            var result = await JsonSerializer.DeserializeAsync<TransactionsLedger>(fileStream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, cancellation);
-            
-            if(result == null)
-            {
-                throw new NullReferenceException($"We could not read file from source {nameof(JsonFromInternetTransactionLedgerReader)}");
-            }
-            
-            VersionHash = Convert.ToBase64String(SHA256.HashData(fileStream));
-
-            return result;
+            return;
         }
 
-        private async Task MonitorSourceChanges()
+        while (true)
         {
-            // we need a service here to download the file in periods of time?
-            // and check hash value?
-
-            var data = await GetModel(CancellationToken.None);
-            var currentFileHash = Convert.ToBase64String(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(data)));
-
-            if(currentFileHash != VersionHash)
+            try
             {
-                ModelChanged?.Invoke(this, new EventArgs());
+                using var fileStream = await _httpClient.GetStreamAsync(
+                    _readerConfiguration.Path,
+                    cancellation);
+
+                var currentFileHash = Convert.ToBase64String(SHA256.HashData(fileStream));
+
+                if (currentFileHash != _versionHash)
+                {
+                    var transactionLedger = await GetTransactionLedger(cancellation);
+                    callback(transactionLedger);
+                    _versionHash = currentFileHash;
+                }
             }
-            
+            catch(Exception e)
+            {
+                onError(e);
+            }
+
+            await Task.Delay(_readerConfiguration.TrackingInterval, cancellation);
         }
     }
 }

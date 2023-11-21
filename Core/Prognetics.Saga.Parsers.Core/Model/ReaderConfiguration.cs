@@ -6,6 +6,7 @@
 
         public string Path { get; set; }
 
-        public bool MonitorSource { get; set; }
+        public bool TrackingEnabled { get; set; }
+        public TimeSpan TrackingInterval { get; set; } = TimeSpan.FromMinutes(1);
     }
 }
