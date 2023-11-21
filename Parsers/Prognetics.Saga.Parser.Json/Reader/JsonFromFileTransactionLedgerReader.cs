@@ -16,7 +16,6 @@ public class JsonFromFileTransactionLedgerReader : ITransactionLedgerSource
 
     public async Task<TransactionsLedger> GetTransactionLedger(CancellationToken cancellation = default)
     {
-        _lastWriteTime = File.GetLastWriteTime(_readerConfiguration.Path);
         using var stream = File.OpenRead(_readerConfiguration.Path);
         return await JsonSerializer.DeserializeAsync<TransactionsLedger>(
             stream,
