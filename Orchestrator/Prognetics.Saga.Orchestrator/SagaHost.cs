@@ -50,7 +50,8 @@ public class SagaHost : ISagaHost
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing) {
+        if (disposing)
+        {
             _client.Dispose();
         }
     }
