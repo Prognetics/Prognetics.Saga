@@ -2,7 +2,5 @@
 
 public interface IStartableSagaOrchestrator : ISagaOrchestrator
 {
-    public bool IsStarted { get; }
-
-    void Start(ISagaSubscriber sagaSubscriber, Action onUpdate);
+    Task Start(CancellationToken cancellationToken = default);
 }

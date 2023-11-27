@@ -2,5 +2,5 @@
 
 public interface IInitializableTransactionLedgerAccessor : ITransactionLedgerAccessor
 {
-    Task Initialize(CancellationToken cancellation = default);
+    Task Initialize(Action onUpdate, CancellationToken cancellation = default);
 }

@@ -1,58 +1,45 @@
-﻿using Prognetics.Saga.Core.Abstract;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Orchestrator.Contract;
 
 namespace Prognetics.Saga.Orchestrator;
 
 public class SagaHost : ISagaHost
 {
-    private readonly IStartableSagaOrchestrator _orchestrator;
     private readonly IInitializableTransactionLedgerAccessor _transactionLedgerAccessor;
-    private readonly ISagaClient _client;
+    private readonly IServiceScopeFactory _serviceScopeProvider;
 
     public SagaHost(
         IInitializableTransactionLedgerAccessor transactionLedgerAccessor,
-        ISagaClient client,
-        IStartableSagaOrchestrator orchestrator)
+        IServiceScopeFactory serviceScopeProvider)
     {
         _transactionLedgerAccessor = transactionLedgerAccessor;
-        _client = client;
-        _orchestrator = orchestrator;
+        _serviceScopeProvider = serviceScopeProvider;
     }
 
     public async Task Start(CancellationToken cancellationToken)
     {
-        while (cancellationToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
-            var cancellationTokenSource = new CancellationTokenSource();
+            var restartCts = new CancellationTokenSource();
+            var restartToken = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                restartCts.Token).Token;
 
-            while (cancellationTokenSource.IsCancellationRequested)
+            await _transactionLedgerAccessor.Initialize(
+                restartCts.Cancel,
+                restartToken);
+
+            using var scope = _serviceScopeProvider.CreateAsyncScope();
+            using var orchestrator = scope.ServiceProvider.GetRequiredService<IStartableSagaOrchestrator>();
+            await orchestrator.Start(restartToken);
+
+            while (!restartToken.IsCancellationRequested)
             {
-                if (_orchestrator.IsStarted)
-                {
-                    await Task.Delay(1000);
-                    continue;
-                }
-
-                await _transactionLedgerAccessor.Initialize(cancellationToken);
-                await _client.Initialize();
-                var subscriber = await _client.GetSubscriber();
-                _orchestrator.Start(subscriber, cancellationTokenSource.Cancel);
-                await _client.Consume(_orchestrator);
+                await Task.Delay(
+                    1000,
+                    restartToken);
             }
-        }
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _client.Dispose();
         }
     }
 }

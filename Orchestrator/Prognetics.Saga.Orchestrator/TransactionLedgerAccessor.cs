@@ -21,7 +21,9 @@ public class TransactionLedgerAccessor : IInitializableTransactionLedgerAccessor
         _logger = logger;
     }
 
-    public async Task Initialize(CancellationToken cancellation = default)
+    public async Task Initialize(
+        Action onUpdate,
+        CancellationToken cancellation = default)
     {
         try
         {
@@ -37,6 +39,7 @@ public class TransactionLedgerAccessor : IInitializableTransactionLedgerAccessor
                         {
                             _transactionLedgers[i] = tl;
                             UpdateTransactionLedger();
+                            onUpdate();
                         }
                     },
                     (exception) =>

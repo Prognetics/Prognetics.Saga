@@ -2,7 +2,7 @@
 
 namespace Prognetics.Saga.Orchestrator.Contract;
 
-public interface ISagaOrchestrator
+public interface ISagaOrchestrator : IDisposable
 {
     Task Push(string queueName, InputMessage inputMessage);
     Task Rollback(string transactionId, CancellationToken cancellationToken = default);
