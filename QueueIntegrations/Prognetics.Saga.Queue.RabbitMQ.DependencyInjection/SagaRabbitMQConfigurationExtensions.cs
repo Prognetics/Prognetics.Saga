@@ -4,7 +4,7 @@ using Prognetics.Saga.Core.DependencyInjection;
 using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 using Prognetics.Saga.Queue.RabbitMQ.Consuming;
-using Prognetics.Saga.Queue.RabbitMQ.Hosting;
+using Prognetics.Saga.Queue.RabbitMQ.Client;
 using Prognetics.Saga.Queue.RabbitMQ.Serialization;
 using Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 

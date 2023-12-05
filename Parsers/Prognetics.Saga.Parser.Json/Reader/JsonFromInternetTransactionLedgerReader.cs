@@ -45,7 +45,7 @@ public class JsonFromInternetTransactionLedgerReader : ITransactionLedgerSource
             return;
         }
 
-        while (true)
+        while (!cancellation.IsCancellationRequested)
         {
             try
             {

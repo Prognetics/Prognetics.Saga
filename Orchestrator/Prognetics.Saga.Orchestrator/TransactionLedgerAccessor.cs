@@ -9,6 +9,7 @@ public class TransactionLedgerAccessor : IInitializableTransactionLedgerAccessor
     private TransactionsLedger? _sagaModel;
     private readonly ITransactionLedgerSource[] _sources;
     private readonly TransactionsLedger[] _transactionLedgers;
+    private readonly Task[] _tracking;
     private readonly ILogger<TransactionLedgerAccessor> _logger;
     private readonly object _lock = new ();
 
@@ -18,6 +19,7 @@ public class TransactionLedgerAccessor : IInitializableTransactionLedgerAccessor
     {
         _sources = sources.ToArray();
         _transactionLedgers = new TransactionsLedger[_sources.Length];
+        _tracking = new Task[_sources.Length];
         _logger = logger;
     }
 
@@ -32,7 +34,7 @@ public class TransactionLedgerAccessor : IInitializableTransactionLedgerAccessor
                 var source = _sources[i];
                 var sourceTransactionLedger = await source.GetTransactionLedger(cancellation);
                 _transactionLedgers[i] = sourceTransactionLedger;
-                await source.TrackTransactionLedger(
+                _tracking[i] = source.TrackTransactionLedger(
                     (tl) =>
                     {
                         lock (_lock)

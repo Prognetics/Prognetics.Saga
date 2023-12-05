@@ -7,7 +7,7 @@ using Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace Prognetics.Saga.Queue.RabbitMQ.Hosting;
+namespace Prognetics.Saga.Queue.RabbitMQ.Client;
 
 public class RabbitMQSagaClient : ISagaClient
 {
@@ -16,7 +16,7 @@ public class RabbitMQSagaClient : ISagaClient
     private readonly IRabbitMQConsumersFactory _rabbitMqSagaConsumersFactory;
     private readonly IRabbitMQSagaSubscriberFactory _sagaSubscriberFactory;
     private readonly RabbitMQSagaOptions _options;
-    private readonly ILogger<IRabbitMQSagaHost> _logger;
+    private readonly ILogger<RabbitMQSagaClient> _logger;
     private IConnection? _connection;
     private IModel? _channel;
 
@@ -26,7 +26,7 @@ public class RabbitMQSagaClient : ISagaClient
         IRabbitMQConsumersFactory rabbitMqSagaConsumersFactory,
         IRabbitMQSagaSubscriberFactory sagaSubscriberFactory,
         RabbitMQSagaOptions options,
-        ILogger<IRabbitMQSagaHost> logger)
+        ILogger<RabbitMQSagaClient> logger)
     {
         _queuesProvider = queuesProvider;
         _rabbitMqSagaConsumersFactory = rabbitMqSagaConsumersFactory;

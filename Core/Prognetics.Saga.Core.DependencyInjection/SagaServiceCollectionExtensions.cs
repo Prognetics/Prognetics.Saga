@@ -20,7 +20,6 @@ public static partial class SagaServiceCollectionExtensions
         serviceCollection.AddSingleton<IdGenerator>(() => Guid.NewGuid().ToString());
         
         serviceCollection.AddSingleton<ISagaEngine, SagaEngine>();
-        serviceCollection.AddSingleton<ISagaHost, SagaHost>();
 
         serviceCollection.AddHostedService<SagaBackgroundService>();
         return serviceCollection;

@@ -4,7 +4,7 @@ using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Queue.RabbitMQ.ChannelSetup;
 using Prognetics.Saga.Queue.RabbitMQ.Configuration;
 using Prognetics.Saga.Queue.RabbitMQ.Consuming;
-using Prognetics.Saga.Queue.RabbitMQ.Hosting;
+using Prognetics.Saga.Queue.RabbitMQ.Client;
 using Prognetics.Saga.Queue.RabbitMQ.Subscribing;
 using RabbitMQ.Client;
 
@@ -20,7 +20,7 @@ public class RabbitMQSagaHostTests
     private readonly ISagaSubscriber _subscriber;
     private readonly IBasicConsumer _basicConsumer;
     private readonly IRabbitMQSagaSubscriberFactory _subscriberFactory;
-    private readonly ILogger<IRabbitMQSagaHost> _logger;
+    private readonly ILogger<RabbitMQSagaClient> _logger;
     private readonly RabbitMQSagaOptions _options;
     private readonly RabbitMQSagaClient _sut;
 
@@ -36,7 +36,7 @@ public class RabbitMQSagaHostTests
         _subscriber = Substitute.For<ISagaSubscriber>();
         _basicConsumer = Substitute.For<IBasicConsumer>();
         _subscriberFactory = Substitute.For<IRabbitMQSagaSubscriberFactory>();
-        _logger = Substitute.For<ILogger<IRabbitMQSagaHost>>();
+        _logger = Substitute.For<ILogger<RabbitMQSagaClient>>();
         _options = new RabbitMQSagaOptions();
 
         _connectionFactory.Create().Returns(_connection);
