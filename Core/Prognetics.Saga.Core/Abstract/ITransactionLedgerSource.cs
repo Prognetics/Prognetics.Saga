@@ -5,4 +5,9 @@ namespace Prognetics.Saga.Core.Abstract;
 public interface ITransactionLedgerSource
 {
     Task<TransactionsLedger> GetTransactionLedger(CancellationToken cancellation = default);
+
+    Task TrackTransactionLedger(
+        Action<TransactionsLedger> callback,
+        Action<Exception> onError,
+        CancellationToken cancellation = default);
 }

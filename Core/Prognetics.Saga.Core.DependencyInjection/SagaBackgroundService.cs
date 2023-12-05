@@ -1,48 +1,36 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Orchestrator.Contract;
 
 namespace Prognetics.Saga.Core.DependencyInjection;
+
 public class SagaBackgroundService : BackgroundService
 {
-    private readonly ISagaHost _host;
-    private bool _isRunning;
+    private readonly IInitializableTransactionLedgerAccessor _transactionLedgerAccessor;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private CancellationTokenSource? _cts;
 
-    public SagaBackgroundService(ISagaHost sagaHost)
+    public SagaBackgroundService(
+        IInitializableTransactionLedgerAccessor transactionLedgerAccessor,
+        IServiceScopeFactory serviceScopeFactory)
     {
-        _host = sagaHost;
+        _serviceScopeFactory = serviceScopeFactory;
+        _transactionLedgerAccessor = transactionLedgerAccessor;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (_isRunning)
-        {
-            throw new InvalidOperationException($"{nameof(SagaBackgroundService)} is running");
+        await _transactionLedgerAccessor.Initialize(
+            () => _cts?.Cancel(),
+            stoppingToken);
+
+        while (!stoppingToken.IsCancellationRequested){
+            _cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+            using var scope = _serviceScopeFactory.CreateScope();
+            using var orchestrator = scope.ServiceProvider.GetRequiredService<IStartableSagaOrchestrator>();
+            await orchestrator.Start(_cts.Token);
+            await Task.FromCanceled(_cts.Token);
         }
-
-        await _host.Start(stoppingToken);
-        _isRunning = true;
-    }
-
-    public override async Task StopAsync(CancellationToken cancellation)
-    {
-        await base.StopAsync(cancellation);
-        _isRunning = false;
-    }
-
-    public override void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _host?.Dispose();
-            base.Dispose();
-        }
-
-        _isRunning = false;
     }
 }

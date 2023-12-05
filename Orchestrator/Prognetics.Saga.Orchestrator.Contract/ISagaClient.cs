@@ -1,6 +1,4 @@
-﻿using Prognetics.Saga.Core.Model;
-
-namespace Prognetics.Saga.Orchestrator.Contract;
+﻿namespace Prognetics.Saga.Orchestrator.Contract;
 
 public interface ISagaClient : IDisposable
 {
