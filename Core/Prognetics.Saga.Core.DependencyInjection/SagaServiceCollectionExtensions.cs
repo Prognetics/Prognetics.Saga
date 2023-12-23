@@ -14,7 +14,7 @@ public static partial class SagaServiceCollectionExtensions
         configure(configuration);
 
         serviceCollection.AddSingleton<IInitializableTransactionLedgerAccessor, TransactionLedgerAccessor>();
-        serviceCollection.AddSingleton<ITransactionLedgerAccessor>(sp => sp.GetRequiredService<IInitializableTransactionLedgerAccessor>());
+        serviceCollection.AddTransient<ITransactionLedgerAccessor>(sp => sp.GetRequiredService<IInitializableTransactionLedgerAccessor>());
         serviceCollection.AddScoped<IStartableSagaOrchestrator, SagaOrchestrator>();
         serviceCollection.AddTransient<ISagaOrchestrator>(sp => sp.GetRequiredService<IStartableSagaOrchestrator>());
         serviceCollection.AddSingleton<IdGenerator>(() => Guid.NewGuid().ToString());

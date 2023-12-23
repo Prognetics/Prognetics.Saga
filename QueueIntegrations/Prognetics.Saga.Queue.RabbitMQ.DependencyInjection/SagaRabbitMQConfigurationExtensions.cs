@@ -7,6 +7,8 @@ using Prognetics.Saga.Queue.RabbitMQ.Consuming;
 using Prognetics.Saga.Queue.RabbitMQ.Client;
 using Prognetics.Saga.Queue.RabbitMQ.Serialization;
 using Prognetics.Saga.Queue.RabbitMQ.Subscribing;
+using Microsoft.Extensions.Logging;
+using RabbitMQ.Client.Events;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.DependencyInjection;
 public static class SagaRabbitMQConfigurationExtensions

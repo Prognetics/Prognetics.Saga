@@ -27,7 +27,7 @@ public class MongoDbCompensationStore : ICompensationStore
         string transactionId,
         CancellationToken cancellationToken = default)
         => await _compensations
-            .Find(Builders<CompensationRow>.Filter.Eq(x => x.TransactionId, transactionId))
+            .Find(Builders<CompensationRow>.Filter.Eq(x => x.Key.TransactionId, transactionId))
             .ToListAsync(cancellationToken: cancellationToken);
 
 }

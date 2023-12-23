@@ -3,4 +3,4 @@
 public record InputMessage(
     string? TransactionId,
     object Payload,
-    string? Compensation);
+    object? Compensation);

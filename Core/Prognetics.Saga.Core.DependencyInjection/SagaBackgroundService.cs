@@ -9,7 +9,8 @@ public class SagaBackgroundService : BackgroundService
 {
     private readonly IInitializableTransactionLedgerAccessor _transactionLedgerAccessor;
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    private CancellationTokenSource? _cts;
+    private readonly CancellationTokenSource _ctsOnStarted = new();
+    private CancellationTokenSource? _ctsOnRestart;
 
     public SagaBackgroundService(
         IInitializableTransactionLedgerAccessor transactionLedgerAccessor,
@@ -19,18 +20,24 @@ public class SagaBackgroundService : BackgroundService
         _transactionLedgerAccessor = transactionLedgerAccessor;
     }
 
+    public CancellationToken OnStarted => _ctsOnStarted.Token;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await _transactionLedgerAccessor.Initialize(
-            () => _cts?.Cancel(),
+            () => _ctsOnRestart?.Cancel(),
             stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested){
-            _cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+            _ctsOnRestart = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
             using var scope = _serviceScopeFactory.CreateScope();
             using var orchestrator = scope.ServiceProvider.GetRequiredService<IStartableSagaOrchestrator>();
-            await orchestrator.Start(_cts.Token);
-            await Task.FromCanceled(_cts.Token);
+            await orchestrator.Start(_ctsOnRestart.Token);
+            if (!_ctsOnStarted.IsCancellationRequested)
+            {
+                _ctsOnStarted.Cancel();
+            }
+            await _ctsOnRestart.Token.Wait();
         }
     }
 }

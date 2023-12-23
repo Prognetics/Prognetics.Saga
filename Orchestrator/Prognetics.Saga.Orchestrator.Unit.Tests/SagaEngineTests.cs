@@ -163,7 +163,7 @@ public class SagaEngineTests
             x.TransactionId == transactionId
             && x.LastCompletionEvent == eventName
             && x.State == TransactionState.Active));
-        await _compensationStore.Received().Save(new(transactionId, compensationName, compensation));
+        await _compensationStore.Received().Save(new(new(transactionId, compensationName), compensation));
     }
 
     [Fact]

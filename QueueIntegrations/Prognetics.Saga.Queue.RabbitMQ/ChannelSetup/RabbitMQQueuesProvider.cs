@@ -36,14 +36,22 @@ public class RabbitMQQueuesProvider : IRabbitMQQueuesProvider
                         Name = step.CompletionEventName,
                         Exchange = _options.Value.Exchange,
                     });
+
                     acc.Add(new()
                     {
                         Name = step.NextEventName,
                         Exchange = _options.Value.Exchange,
                         Arguments = new Dictionary<string, object>
                         {
-                            { RabbitMqConsts.DLX_EXCHANGE_QUEUE_HEADER_NAME, _options.Value.DlxExchange }
+                            { RabbitMqConsts.DLX_EXCHANGE_QUEUE_HEADER_NAME, _options.Value.DlxExchange },
+                            { RabbitMqConsts.DLX_ROUTING_KEY_QUEUE_HEADER_NAME, _options.Value.DlxQueue },
                         }
+                    });
+
+                    acc.Add(new()
+                    {
+                        Name = step.CompensationEventName,
+                        Exchange = _options.Value.Exchange,
                     });
                     return acc;
                 });

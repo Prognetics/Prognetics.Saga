@@ -6,7 +6,7 @@ public class RabbitMQQueue
 
     public string? Exchange { get; init; }
 
-    public bool Durable { get; init; }
+    public bool Durable { get; init; } = true;
 
     public bool Exclusive { get; init; }
 
