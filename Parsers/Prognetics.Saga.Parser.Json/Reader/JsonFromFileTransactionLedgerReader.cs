@@ -1,4 +1,5 @@
-﻿using Prognetics.Saga.Core.Abstract;
+﻿using Prognetics.Saga.Core;
+using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Parsers.Core.Model;
 using System.Text.Json;
@@ -50,6 +51,6 @@ public class JsonFromFileTransactionLedgerReader : ITransactionLedgerSource
             }
         };
 
-        await Task.FromCanceled(cancellationToken);
+        await cancellationToken.Wait();
     }
 }

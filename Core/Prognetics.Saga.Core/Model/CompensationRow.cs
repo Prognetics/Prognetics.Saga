@@ -1,6 +1,9 @@
 ﻿namespace Prognetics.Saga.Core.Model;
 
 public record CompensationRow(
-    string TransactionId,
-    string CompensationEvent,
+    CompensationRowKey Key,
     string Compensation);
+
+public record CompensationRowKey(
+    string TransactionId,
+    string CompensationEvent);

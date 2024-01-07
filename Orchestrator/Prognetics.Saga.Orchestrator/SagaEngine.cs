@@ -4,6 +4,7 @@ using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 namespace Prognetics.Saga.Orchestrator;
 
@@ -59,13 +60,14 @@ public class SagaEngine : ISagaEngine
             return EngineResult<EngineOutput>.Fail();
         }
 
-        if (CompensationExists(input.Message.Compensation))
+        if (input.Message.Compensation is not null)
         {
             await _compensationStore.Save(
                 new(
-                    transactionId,
-                    transactionStep.Step.CompensationEventName,
-                    input.Message.Compensation),
+                    new(
+                        transactionId,
+                        transactionStep.Step.CompensationEventName),
+                    JsonSerializer.Serialize(input.Message.Compensation)),
                 cancellationToken);
         }
 
@@ -76,9 +78,6 @@ public class SagaEngine : ISagaEngine
                     transactionId,
                     input.Message.Payload)));
     }
-
-    private static bool CompensationExists([NotNullWhen(true)]string? compensation)
-        => !string.IsNullOrEmpty(compensation);
 
     private async Task<string> InitializeTransaction(TransactionStep stepRecord)
     {
@@ -111,8 +110,8 @@ public class SagaEngine : ISagaEngine
             _logger.LogError(
                 "Transaction with id {TransactionId} expects {ExpectedEvent}, but received {ReceivedEvent}",
                 transactionId,
-                transactionStep.Step.CompletionEventName,
-                nextOperation?.CompletionEventName);
+                nextOperation?.CompletionEventName,
+                transactionStep.Step.CompletionEventName);
             return false;
         }
 
@@ -157,8 +156,8 @@ public class SagaEngine : ISagaEngine
         var compensations = await _compensationStore.Get(transactionId, cancellationToken);
         return EngineResult<IEnumerable<EngineOutput>>.Success(compensations.Select(c =>
             new EngineOutput(
-                c.CompensationEvent,
-                new OutputMessage(transactionId, c.Compensation))));
+                c.Key.CompensationEvent,
+                new OutputMessage(transactionId, JsonSerializer.Deserialize<object>(c.Compensation) ?? new object()))));
     }
 
     public async Task CompleteRollback(
@@ -205,11 +204,10 @@ public class SagaEngine : ISagaEngine
             return false;
         }
 
-        if (transactionLog.State == TransactionState.Finished
-            || transactionLog.State == TransactionState.Failed)
+        if (transactionLog.State == TransactionState.Failed)
         {
             _logger.LogWarning(
-                "The transaction with id: {TransactionId} has already completed. Compensation will not be executed",
+                "The transaction with id: {TransactionId} has already failed. Compensation will not be executed",
                 transactionId);
             return false;
         }

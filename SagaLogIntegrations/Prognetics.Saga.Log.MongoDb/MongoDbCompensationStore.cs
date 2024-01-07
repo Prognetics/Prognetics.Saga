@@ -1,4 +1,6 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Core.Model;
 
@@ -20,14 +22,14 @@ public class MongoDbCompensationStore : ICompensationStore
     public async Task Save(
         CompensationRow compensation,
         CancellationToken cancellationToken = default)
-        => await _compensations
+        => await _compensations 
             .InsertOneAsync(compensation, cancellationToken: cancellationToken);
 
     public async Task<IReadOnlyList<CompensationRow>> Get(
         string transactionId,
         CancellationToken cancellationToken = default)
-        => await _compensations
-            .Find(Builders<CompensationRow>.Filter.Eq(x => x.TransactionId, transactionId))
-            .ToListAsync(cancellationToken: cancellationToken);
+        => (await _compensations
+            .Find(Builders<CompensationRow>.Filter.Eq(x => x.Key.TransactionId, transactionId))
+            .ToListAsync(cancellationToken: cancellationToken));
 
 }

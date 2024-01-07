@@ -31,7 +31,7 @@ public class RabbitMQConsumerFactory : IRabbitMQConsumerFactory
             orchestrator.Push(e.RoutingKey, new(
                     inputMessage.TransactionId,
                     inputMessage.Payload,
-                    inputMessage.Compensation?.ToString()))
+                    inputMessage.Compensation))
                 .GetAwaiter()
                 .GetResult();
             channel.BasicAck(e.DeliveryTag, false);

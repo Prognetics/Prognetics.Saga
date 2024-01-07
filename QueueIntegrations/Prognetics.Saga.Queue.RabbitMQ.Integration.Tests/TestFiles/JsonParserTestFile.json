@@ -1,41 +1,41 @@
 {
   "transactions": [
     {
-      "name": "TestTransaction1",
+      "name": "Transaction1",
       "steps": [
         {
-          "eventName": "Step1",
-          "completionEventName": "Step1Completion",
-          "compensationEventName": "Step1Compensation"
+          "completionEventName": "Transaction1Step1Completion",
+          "nextEventName": "Transaction1Step1Next",
+          "compensationEventName": "Transaction1Step1Compensation"
         },
         {
-          "eventName": "Step2",
-          "completionEventName": "Step2Completion",
-          "compensationEventName": "Step2Compensation"
+          "completionEventName": "Transaction1Step2Completion",
+          "nextEventName": "Transaction1Step2Next",
+          "compensationEventName": "Transaction1Step2Compensation"
         },
         {
-          "eventName": "Step3",
-          "completionEventName": "Step3Completion",
-          "compensationEventName": "Step3Compensation"
+          "completionEventName": "Transaction1Step3Completion",
+          "nextEventName": "Transaction1Step3Next",
+          "compensationEventName": "Transaction1Step3Compensation"
         }
       ]
     },
     {
-      "name": "TestTransaction2",
+      "name": "Transaction2",
       "steps": [
         {
-          "eventName": "Transaction2Step1",
           "completionEventName": "Transaction2Step1Completion",
+          "nextEventName": "Transaction2Step1Next",
           "compensationEventName": "Transaction2Step1Compensation"
         },
         {
-          "eventName": "Transaction2Step2",
           "completionEventName": "Transaction2Step2Completion",
+          "nextEventName": "Transaction2Step2Next",
           "compensationEventName": "Transaction2Step2Compensation"
         },
         {
-          "eventName": "Transaction2Step3",
           "completionEventName": "Transaction2Step3Completion",
+          "nextEventName": "Transaction2Step3Next",
           "compensationEventName": "Transaction2Step3Compensation"
         }
       ]
