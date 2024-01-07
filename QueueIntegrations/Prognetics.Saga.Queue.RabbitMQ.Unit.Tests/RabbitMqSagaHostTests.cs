@@ -80,7 +80,7 @@ public class RabbitMQSagaHostTests
 
         _channel.Received(queuesCount).QueueDeclare(
             Arg.Is<string>(x => queues.Any(q => q.Name == x)),
-            false,
+            true,
             false,
             false,
             Arg.Is<IDictionary<string, object>>(x => !x.Any()));
@@ -136,7 +136,7 @@ public class RabbitMQSagaHostTests
 
         _channel.Received(queuesCount).QueueDeclare(
             Arg.Is<string>(x => queues.Any(q => q.Name == x)),
-            false,
+            true,
             false,
             false,
             Arg.Is<IDictionary<string, object>>(x => !x.Any()));

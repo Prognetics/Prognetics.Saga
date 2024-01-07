@@ -4,6 +4,7 @@ using Prognetics.Saga.Core.Abstract;
 using Prognetics.Saga.Core.Model;
 using Prognetics.Saga.Orchestrator.Contract.DTO;
 using Prognetics.Saga.Orchestrator.Contract;
+using System.Text.Json;
 
 namespace Prognetics.Saga.Orchestrator.Unit.Tests;
 
@@ -163,7 +164,7 @@ public class SagaEngineTests
             x.TransactionId == transactionId
             && x.LastCompletionEvent == eventName
             && x.State == TransactionState.Active));
-        await _compensationStore.Received().Save(new(new(transactionId, compensationName), compensation));
+        await _compensationStore.Received().Save(new(new(transactionId, compensationName), JsonSerializer.Serialize(compensation)));
     }
 
     [Fact]
