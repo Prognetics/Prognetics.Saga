@@ -17,8 +17,6 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Channels;
 using Xunit.Abstractions;
 using Prognetics.Saga.Core;
-using MongoDB.Driver.Core.Bindings;
-using static MongoDB.Driver.WriteConcern;
 
 namespace Prognetics.Saga.Queue.RabbitMQ.Integration.Tests;
 /// <summary>
@@ -129,6 +127,54 @@ public sealed class RabbitMQSagaHostTests :
     }
 
     [Fact(Skip = _skipReason)]
+    public async Task WhenValidMessagesInCorrectOrderWasSent_ThenTransactionShouldBeClosedAndNotInvokeRollback()
+    {
+        await _sut.StartAsync(_ctsSut.Token);
+        await _ctsStarted.Token.Wait();
+
+        var transactionId = ExecuteTransactionStep(
+            null,
+            "Transaction2Step1Completion",
+            "Transaction2Step1Next",
+            ValidResult,
+            ValidMessage);
+
+        Assert.NotNull(transactionId);
+
+        ExecuteTransactionStep(
+            transactionId,
+            "Transaction2Step2Completion",
+            "Transaction2Step2Next",
+            ValidResult,
+            ValidMessage);
+
+        ExecuteTransactionStep(
+            transactionId,
+            "Transaction2Step3Completion",
+            "Transaction2Step3Next",
+            ValidResult,
+            ValidMessage);
+
+        ExecuteTransactionStep(
+            transactionId,
+            "Transaction2Step2Completion",
+            "Transaction2Step2Next",
+            NullResult,
+            NullMessage);
+
+        ExecuteTransactionStep(
+            transactionId,
+            "Transaction2Step3Completion",
+            "Transaction2Step3Next",
+            NullResult,
+            NullMessage);
+
+        AssertCompensationNotRun("Transaction1Step3Compensation");
+        AssertCompensationNotRun("Transaction1Step2Compensation");
+        AssertCompensationNotRun("Transaction1Step1Compensation");
+    }
+
+    [Fact(Skip = _skipReason)]
     public async Task WhenValidMessagesInIncorrectOrderWasSent_ThenOnlyAppropriateMessageShouldBeFetched()
     {
         await _sut.StartAsync(_ctsSut.Token);
@@ -165,7 +211,6 @@ public sealed class RabbitMQSagaHostTests :
             ValidMessage);
     }
 
-
     [Fact(Skip = _skipReason)]
     public async Task WhenStepFailed_ThenRollbackShouldBeExecuted()
     {
@@ -196,17 +241,36 @@ public sealed class RabbitMQSagaHostTests :
             ValidMessage,
             false);
 
-        void AssertCompensation(string compensationName)
-        {
-            var result = _gettingRetryPolicy.Execute(() =>
-                _channel.BasicGet(compensationName, true));
+        AssertCompensationRun("Transaction1Step3Compensation");
+        AssertCompensationRun("Transaction1Step2Compensation");
+        AssertCompensationRun("Transaction1Step1Compensation");
+    }
 
-            Assert.NotNull(result);
-        }
 
-        AssertCompensation("Transaction1Step3Compensation");
-        AssertCompensation("Transaction1Step2Compensation");
-        AssertCompensation("Transaction1Step1Compensation");
+    [Fact(Skip = _skipReason)]
+    public async Task WhenNotExistingTransactionIdIsUsed_ThenNoMessageShouldBeSent()
+    {
+        await _sut.StartAsync(_ctsSut.Token);
+        await _ctsStarted.Token.Wait();
+        const string notExistingTransactionId = "1DD570D8-365A-42D3-903A-D88DAF470502";
+
+        ExecuteTransactionStep(
+            notExistingTransactionId,
+            "Transaction1Step2Completion",
+            "Transaction1Step2Next",
+            NullResult,
+            NullMessage);
+
+        ExecuteTransactionStep(
+            notExistingTransactionId,
+            "Transaction1Step3Completion",
+            "Transaction1Step3Next",
+            NullResult,
+            NullMessage);
+
+        AssertCompensationNotRun("Transaction1Step3Compensation");
+        AssertCompensationNotRun("Transaction1Step2Compensation");
+        AssertCompensationNotRun("Transaction1Step1Compensation");
     }
 
     [Fact(Skip = _skipReason)]
@@ -294,7 +358,7 @@ public sealed class RabbitMQSagaHostTests :
         bool acknowladge = true)
     {
         var data = new TestData($"{eventName}-Value");
-        var compensation = new TestData($"{eventName}-Compensation");
+        var compensation = new TestData(eventName.Replace("Completion", "Compensation"));
         var inputMessage = new InputMessage(
             transactionId,
             data,
@@ -352,6 +416,26 @@ public sealed class RabbitMQSagaHostTests :
     {
         Assert.Null(message);
         Assert.Null(message?.TransactionId);
+    }
+
+    private void AssertCompensationRun(string compensationName)
+    {
+        var result = _gettingRetryPolicy.Execute(() =>
+            _channel.BasicGet(compensationName, true));
+
+        Assert.NotNull(result);
+        var json = Encoding.UTF8.GetString(result.Body.Span);
+        var outputMessage = JsonSerializer.Deserialize<OutputMessage>(json);
+        Assert.NotNull(outputMessage);
+        Assert.Equal(new TestData(compensationName), ((JsonElement)outputMessage!.Payload).Deserialize<TestData>());
+    }
+
+    private void AssertCompensationNotRun(string compensationName)
+    {
+        var result = _gettingRetryPolicy.Execute(() =>
+            _channel.BasicGet(compensationName, true));
+
+        Assert.Null(result);
     }
 
     public void Dispose()
